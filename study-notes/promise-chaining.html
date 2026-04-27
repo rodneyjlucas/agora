@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JavaScript Promise Chaining Tutorial — ECMAScript 2026</title>
+<style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+      --code-border: #1e3a8a;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+                  radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 72px; }
+    header, section {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+    header { padding: 32px; margin-bottom: 28px; }
+    section { padding: 28px; margin: 22px 0; }
+    h1, h2, h3, h4 { color: #f8fafc; line-height: 1.25; margin-top: 0; }
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 10px; letter-spacing: -0.04em; }
+    h2 { font-size: 1.85rem; margin-top: 0; }
+    h3 { font-size: 1.25rem; margin-top: 30px; color: #dbeafe; }
+    h4 { color: var(--accent); margin-bottom: 8px; }
+    p, li { color: var(--text); }
+    .subtitle { color: var(--muted); font-size: 1.05rem; max-width: 880px; margin: 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.75); color: #dbeafe; padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; }
+    .toc { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; padding: 0; list-style: none; }
+    .toc li { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.65); border-radius: 14px; }
+    .toc a { display: block; padding: 12px 14px; color: var(--accent); text-decoration: none; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(125, 211, 252, 0.12); color: #dbeafe; padding: 0.15rem 0.35rem; border-radius: 6px; font-size: 0.95em; }
+    pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 0 0 16px 16px; }
+    pre code { background: transparent; padding: 0; color: #e0f2fe; font-size: 0.92rem; }
+    .comment { color: #94a3b8; } .keyword { color: #93c5fd; } .string { color: #86efac; } .number { color: #fcd34d; } .method { color: #c4b5fd; }
+    .code-card { margin: 14px 0 10px; border-radius: 16px; overflow: hidden; }
+    .code-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--code-border); border-bottom: 0; background: #071126; border-radius: 16px 16px 0 0; }
+    .fence-label { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--accent); font-size: 0.9rem; }
+    .copy-btn { border: 1px solid var(--border); background: rgba(125, 211, 252, 0.1); color: #e0f2fe; border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 0.86rem; }
+    .copy-btn:hover { background: rgba(125, 211, 252, 0.2); }
+    table { width: 100%; border-collapse: collapse; margin: 18px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #1e293b; color: #eff6ff; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    .callout { border: 1px solid var(--border); border-left: 5px solid var(--accent); background: rgba(30, 41, 59, 0.8); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+    .callout.warn { border-left-color: var(--warn); } .callout.bad { border-left-color: var(--bad); } .callout.good { border-left-color: var(--good); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 18px; background: rgba(15, 23, 42, 0.72); padding: 18px; }
+    .explain { color: var(--muted); margin-top: 8px; }
+    .diagram { margin: 22px 0; padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); overflow-x: auto; }
+    .flow { display: flex; align-items: center; gap: 12px; min-width: 760px; }
+    .node { min-width: 150px; padding: 14px 12px; border: 1px solid #475569; border-radius: 16px; text-align: center; background: #0f172a; box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+    .node.accent { border-color: var(--accent); background: rgba(14, 116, 144, 0.2); }
+    .node.good { border-color: var(--good); background: rgba(22, 101, 52, 0.2); }
+    .node.warn { border-color: var(--warn); background: rgba(113, 63, 18, 0.2); }
+    .node.bad { border-color: var(--bad); background: rgba(127, 29, 29, 0.18); }
+    .arrow { color: var(--accent); font-size: 1.4rem; white-space: nowrap; }
+    .console { list-style: none; padding: 0; margin: 18px 0; border: 1px solid var(--code-border); border-radius: 16px; overflow: hidden; background: var(--code-bg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .console li { padding: 10px 14px; border-bottom: 1px solid rgba(51, 65, 85, 0.7); color: #e0f2fe; }
+    .console li:last-child { border-bottom: 0; }
+    .badge { display: inline-block; min-width: 82px; color: var(--accent); }
+    .footer { text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.95rem; }
+    @media (max-width: 760px) { header, section { padding: 20px; } .container { padding: 22px 14px 44px; } .flow { min-width: 680px; } }
+  
+
+    .code-card pre code.language-javascript,
+    pre code.language-javascript {
+      display: block;
+      white-space: pre;
+      tab-size: 2;
+      color: #e0f2fe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      line-height: 1.6;
+    }
+    .token.comment { color: #94a3b8; font-style: italic; }
+    .token.keyword { color: #93c5fd; font-weight: 650; }
+    .token.string { color: #86efac; }
+    .token.number { color: #fcd34d; }
+    .token.function { color: #7dd3fc; }
+    .token.method { color: #a78bfa; }
+    .token.operator,
+    .token.punctuation { color: #cbd5e1; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>JavaScript Promise Chaining</h1>
+<p class="subtitle">A focused tutorial based on ECMAScript 2026 Promise semantics and the browser event loop model. The goal is to explain why this code logs in the order it does, especially when synchronous code, resolved promises, <code>fetch()</code>, <code>.then()</code>, <code>.finally()</code>, microtasks, and <code>setTimeout()</code> interact.</p>
+<div class="pill-row">
+<span class="pill">ECMAScript 2026 aligned</span>
+<span class="pill">Promise chaining</span>
+<span class="pill">Microtasks vs tasks</span>
+<span class="pill">Fetch timing</span>
+<span class="pill">Copyable code</span>
+</div>
+<ul class="toc">
+<li><a href="#original-code">1. Original Code</a></li>
+<li><a href="#expected-output">2. Expected Output</a></li>
+<li><a href="#queues">3. Queues and Promise Behavior</a></li>
+<li><a href="#excerpt-order">4. Excerpt-by-Excerpt Queue Effects</a></li>
+<li><a href="#critical-patterns">5. Critical Patterns</a></li>
+<li><a href="#gotchas">6. Non-intuitive Gotchas</a></li>
+<li><a href="#summary">7. Summary</a></li>
+</ul>
+</header>
+<section id="original-code">
+<h2>1. Original Code</h2>
+<p>This is the source code being analyzed. Each JavaScript example is displayed as a formatted code panel with copy-to-clipboard support.</p>
+<div class="code-card">
+<div class="code-toolbar">
+<button class="copy-btn" data-copy-target="original-js">Copy JavaScript</button>
+</div>
+<pre><code class="language-javascript" id="original-js">setTimeout<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'8: setTimeout callback'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Promise<span class="token punctuation">.</span>resolve<span class="token punctuation">(</span><span class="token string">'first'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>value <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'2: First trivial promise'</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+fetch<span class="token punctuation">(</span><span class="token string">'https://api.example.com/user/1'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'4: Response received'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">return</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>user <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'5: User data parsed'</span><span class="token punctuation">,</span> user<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">return</span> fetch<span class="token punctuation">(</span><span class="token string">'https://api.example.com/posts/'</span> <span class="token operator">+</span> user<span class="token punctuation">.</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>posts <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'6: Posts loaded'</span><span class="token punctuation">,</span> posts<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token keyword">finally</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'6.5: Cleanup (finally)'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Promise<span class="token punctuation">.</span>resolve<span class="token punctuation">(</span><span class="token string">'second'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>value <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'3: Second trivial promise'</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Promise<span class="token punctuation">.</span>resolve<span class="token punctuation">(</span><span class="token string">'third'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>value <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'7: Third trivial promise'</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'1: Synchronous code'</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+</section>
+<section id="expected-output">
+<h2>2. Expected Output</h2>
+<div class="callout warn">
+<strong>Important assumption:</strong> the exact timing of the <code>fetch()</code> chain depends on the network, CORS, DNS, server behavior, and whether the URL actually responds. Since <code>api.example.com</code> is a placeholder-style URL, a real browser may reject the fetch. The sequence below shows the intended successful case where both fetches and both <code>.json()</code> calls eventually fulfill.
+      </div>
+<ul class="console">
+<li><span class="badge">sync</span> 1: Synchronous code</li>
+<li><span class="badge">microtask</span> 2: First trivial promise first</li>
+<li><span class="badge">microtask</span> 3: Second trivial promise second</li>
+<li><span class="badge">microtask</span> 7: Third trivial promise third</li>
+<li><span class="badge">task</span> 8: setTimeout callback</li>
+<li><span class="badge">later</span> 4: Response received</li>
+<li><span class="badge">later</span> 5: User data parsed &lt;user.name&gt;</li>
+<li><span class="badge">later</span> 6: Posts loaded &lt;posts.length&gt;</li>
+<li><span class="badge">later</span> 6.5: Cleanup (finally)</li>
+</ul>
+<p>The numbering in the log messages is mostly a teaching aid, not a complete guarantee of real-world timing. The trivial resolved promises run before the timer because promise reactions are microtasks. The <code>fetch()</code> continuation usually runs later because it waits for external I/O before its promise settles.</p>
+</section>
+<section id="queues">
+<h2>3. Main Topics: Queues and Promise Behavior</h2>
+<div class="grid-2">
+<div class="card">
+<h3>Call stack</h3>
+<p>The script starts as one task. JavaScript executes the top-level code synchronously from top to bottom. No promise callback runs while this initial script is still executing.</p>
+</div>
+<div class="card">
+<h3>Microtask queue</h3>
+<p>Promise reactions created by <code>.then()</code>, <code>.catch()</code>, and <code>.finally()</code> are scheduled as promise jobs. They run after the current synchronous script completes and before the browser moves to the next task.</p>
+</div>
+<div class="card">
+<h3>Task queue</h3>
+<p><code>setTimeout(..., 0)</code> does not mean “run immediately.” It means “schedule a timer task as soon as eligible.” It still waits until the current script and the microtask checkpoint are done.</p>
+</div>
+<div class="card">
+<h3>Network / fetch</h3>
+<p><code>fetch()</code> starts an asynchronous operation and returns a promise immediately. Its <code>.then()</code> callback cannot run until the fetch promise fulfills with a response.</p>
+</div>
+</div>
+<div class="diagram">
+<h3>Visual: Initial Turn of the Event Loop</h3>
+<div class="flow">
+<div class="node">Top-level script task</div>
+<div class="arrow">queues</div>
+<div class="node accent">Promise microtasks<br/>2, 3, 7</div>
+<div class="arrow">then</div>
+<div class="node warn">Timer task<br/>8</div>
+<div class="arrow">while</div>
+<div class="node good">fetch continues externally</div>
+</div>
+</div>
+<div class="callout good">
+<strong>Core rule:</strong> after the currently running script finishes, JavaScript drains the microtask queue before running the next task, such as a timer callback.
+      </div>
+</section>
+<section id="excerpt-order">
+<h2>4. How Each Excerpt Affects Queues and Output Order</h2>
+<h3>4.1 Timer registration</h3>
+<div class="code-card">
+<div class="code-toolbar"><button class="copy-btn" data-copy-target="timer-js">Copy</button></div>
+<pre><code class="language-javascript" id="timer-js">setTimeout<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'8: setTimeout callback'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+<p>This registers a timer with the host environment. The callback is not pushed onto the call stack immediately. When the timer becomes eligible, it becomes a task. It still waits behind the initial script and behind the microtask queue created by already-fulfilled promises.</p>
+<h3>4.2 First resolved promise</h3>
+<div class="code-card">
+<div class="code-toolbar"><button class="copy-btn" data-copy-target="first-js">Copy</button></div>
+<pre><code class="language-javascript" id="first-js">Promise<span class="token punctuation">.</span>resolve<span class="token punctuation">(</span><span class="token string">'first'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>value <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'2: First trivial promise'</span><span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+<p><code>Promise.resolve('first')</code> creates an already-fulfilled promise. Calling <code>.then()</code> does not run the callback now. It queues a promise reaction microtask. Because this is the first trivial resolved promise registered, its callback is ahead of the later trivial promise callbacks.</p>
+<h3>4.3 Fetch chain</h3>
+<div class="code-card">
+<div class="code-toolbar"><button class="copy-btn" data-copy-target="fetch-js">Copy</button></div>
+<pre><code class="language-javascript" id="fetch-js">fetch<span class="token punctuation">(</span><span class="token string">'https://api.example.com/user/1'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'4: Response received'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">return</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>user <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'5: User data parsed'</span><span class="token punctuation">,</span> user<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">return</span> fetch<span class="token punctuation">(</span><span class="token string">'https://api.example.com/posts/'</span> <span class="token operator">+</span> user<span class="token punctuation">.</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>posts <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'6: Posts loaded'</span><span class="token punctuation">,</span> posts<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token keyword">finally</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'6.5: Cleanup (finally)'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+<p>The first <code>fetch()</code> returns a pending promise. The chain is assembled immediately, but none of those callbacks run during the initial script. When the response arrives, the first <code>.then()</code> reaction becomes a microtask and logs <code>4</code>. Returning <code>response.json()</code> pauses the chain until JSON parsing fulfills. Returning the second <code>fetch()</code> pauses it again until the posts response arrives.</p>
+<div class="diagram">
+<h3>Visual: Promise Chain Adoption</h3>
+<div class="flow">
+<div class="node">fetch user</div>
+<div class="arrow">fulfills</div>
+<div class="node accent">then logs 4<br/>returns json()</div>
+<div class="arrow">waits</div>
+<div class="node accent">then logs 5<br/>returns fetch posts</div>
+<div class="arrow">waits</div>
+<div class="node good">then logs 6<br/>finally logs 6.5</div>
+</div>
+</div>
+<h3>4.4 Second and third resolved promises</h3>
+<p>These are the same pattern as the first trivial promise. They are already fulfilled, so their <code>.then()</code> callbacks are queued as microtasks in registration order.</p>
+<table>
+<thead><tr><th>Registration order</th><th>Queued callback</th><th>Expected log</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>First trivial promise reaction</td><td><code>2: First trivial promise first</code></td></tr>
+<tr><td>2</td><td>Second trivial promise reaction</td><td><code>3: Second trivial promise second</code></td></tr>
+<tr><td>3</td><td>Third trivial promise reaction</td><td><code>7: Third trivial promise third</code></td></tr>
+</tbody>
+</table>
+<h3>4.5 Final synchronous log</h3>
+<div class="code-card">
+<div class="code-toolbar"><button class="copy-btn" data-copy-target="sync-js">Copy</button></div>
+<pre><code class="language-javascript" id="sync-js">console<span class="token punctuation">.</span>log<span class="token punctuation">(</span><span class="token string">'1: Synchronous code'</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+<p>This runs immediately because it is ordinary synchronous code. It appears first even though it is physically near the bottom of the file. Promise callbacks and timer callbacks do not interrupt the running script.</p>
+</section>
+<section id="critical-patterns">
+<h2>5. Critical Patterns</h2>
+<table>
+<thead><tr><th>Pattern</th><th>What it means</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td><code>Promise.resolve(x).then(...)</code></td><td>Queue a microtask for after the current script.</td><td>Runs before timers that are scheduled for the next task.</td></tr>
+<tr><td><code>return response.json()</code></td><td>Return a promise from a <code>.then()</code> callback.</td><td>The outer chain waits for that promise before continuing.</td></tr>
+<tr><td><code>return fetch(...)</code></td><td>Adopt another async operation into the chain.</td><td>The next <code>.then()</code> receives the result of the returned promise, not the promise object itself.</td></tr>
+<tr><td><code>.finally(...)</code></td><td>Run cleanup after fulfillment or rejection.</td><td>Useful for spinners, locks, temporary state, and logging that must happen either way.</td></tr>
+<tr><td><code>setTimeout(fn, 0)</code></td><td>Schedule a future task, not an immediate callback.</td><td>It generally runs after the current microtasks are drained.</td></tr>
+</tbody>
+</table>
+<div class="callout">
+<strong>Interview-level phrasing:</strong> <code>.then()</code> returns a new promise. If the callback returns a plain value, the next promise fulfills with that value. If the callback returns a promise, the next promise adopts that promise’s eventual state.
+      </div>
+</section>
+<section id="gotchas">
+<h2>6. Non-intuitive Gotchas and Common Mistakes</h2>
+<div class="grid-2">
+<div class="card">
+<h3>Gotcha: <code>setTimeout(..., 0)</code> is not first</h3>
+<p>A zero delay does not beat already-queued promise microtasks. Timers are tasks; promise reactions are microtasks.</p>
+</div>
+<div class="card">
+<h3>Gotcha: <code>.then()</code> does not run inline</h3>
+<p>Even when the promise is already fulfilled, the callback is deferred to a microtask.</p>
+</div>
+<div class="card">
+<h3>Gotcha: fetch does not join the trivial promise group</h3>
+<p>The trivial promises are already fulfilled. The fetch promise is pending, so its continuation waits for network completion.</p>
+</div>
+<div class="card">
+<h3>Gotcha: missing <code>return</code> breaks the chain</h3>
+<p>If you forget <code>return response.json()</code> or <code>return fetch(...)</code>, the next <code>.then()</code> may run with <code>undefined</code> or before the intended async work is done.</p>
+</div>
+<div class="card">
+<h3>Gotcha: <code>.finally()</code> does not receive chain data</h3>
+<p>A <code>finally</code> callback is for cleanup, not transformation. It does not receive <code>posts</code> as a normal argument.</p>
+</div>
+<div class="card">
+<h3>Gotcha: no <code>.catch()</code></h3>
+<p>If either fetch fails, JSON parsing fails, or the placeholder API is unreachable, this chain rejects. In production, add <code>.catch()</code> after <code>.finally()</code> or before it depending on desired cleanup/error behavior.</p>
+</div>
+</div>
+<div class="callout bad">
+<strong>Common broken version:</strong> using braces in a <code>.then()</code> but forgetting <code>return</code>. Block-bodied arrow functions do not implicitly return.
+      </div>
+<div class="code-card">
+<div class="code-toolbar"><button class="copy-btn" data-copy-target="broken-js">Copy</button></div>
+<pre><code class="language-javascript" id="broken-js"><span class="token comment">// Broken: the next then receives undefined.</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+  response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token comment">// Correct: return the promise so the chain waits.</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+<span class="token keyword">return</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token comment">// Also correct: expression-bodied arrow implicitly returns.</span>
+<span class="token punctuation">.</span>then<span class="token punctuation">(</span>response <span class="token operator">=&gt;</span> response<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<div aria-hidden="true" class="code-toolbar"><span></span></div>
+</div>
+</section>
+<section id="summary">
+<h2>7. Summary</h2>
+<p>The main lesson is that promise chaining is about ordering and adoption. The current script runs first. Already-fulfilled promise reactions run as microtasks after the script finishes. Timer callbacks run as tasks after the microtask queue drains. Fetch chains continue only when their pending promises settle.</p>
+<div class="diagram">
+<h3>Final Mental Model</h3>
+<div class="flow">
+<div class="node good">Run all sync code<br/><code>1</code></div>
+<div class="arrow">then drain</div>
+<div class="node accent">ready microtasks<br/><code>2, 3, 7</code></div>
+<div class="arrow">then run</div>
+<div class="node warn">eligible tasks<br/><code>8</code></div>
+<div class="arrow">later settle</div>
+<div class="node good">fetch chain<br/><code>4, 5, 6, 6.5</code></div>
+</div>
+</div>
+<div class="callout good">
+<strong>Final rule:</strong> promises do not make callbacks synchronous. They schedule reactions as microtasks. Chaining works because each <code>.then()</code> returns a new promise that waits for the value or promise returned by the previous callback.
+      </div>
+</section>
+<p class="footer">Standalone HTML tutorial generated for JavaScript promise chaining.</p>
+</div>
+<script>
+    function decodeCodeElementText(element) {
+      return element.textContent
+        .replace(/```javascript\n?/g, '')
+        .replace(/\n?```$/g, '')
+        .split('\n')
+        .filter(line => line.trim().toLowerCase() !== 'javascript')
+        .join('\n')
+        .trim();
+    }
+
+    document.querySelectorAll('.copy-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const targetId = button.getAttribute('data-copy-target');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        const originalText = button.textContent;
+        try {
+          await navigator.clipboard.writeText(decodeCodeElementText(target));
+          button.textContent = 'Copied';
+          setTimeout(() => { button.textContent = originalText; }, 1200);
+        } catch (error) {
+          button.textContent = 'Copy failed';
+          setTimeout(() => { button.textContent = originalText; }, 1500);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

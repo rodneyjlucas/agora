@@ -1,0 +1,20 @@
+{
+  "name": "agora",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "bash scripts/lint.sh",
+    "format": "bash scripts/format.sh",
+    "check": "bash scripts/check.sh",
+    "exam:coercion": "node src/interactive-coercion-exam.js",
+    "exam:coercion:graded": "node src/interactive-coercion-exam-graded.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0"
+  }
+}

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Study Notes Knowledge Hub</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: rgba(5, 8, 22, 0.82);
+      backdrop-filter: blur(14px);
+      padding: 24px 18px;
+    }
+    .brand {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(17, 24, 39, 0.88);
+      margin-bottom: 16px;
+    }
+    .brand h1 {
+      margin: 0 0 8px;
+      color: #f8fafc;
+      font-size: 1.35rem;
+      line-height: 1.15;
+    }
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    .stat strong {
+      display: block;
+      color: var(--accent);
+      font-size: 1.35rem;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .sidebar-group {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.56);
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .sidebar-group summary {
+      cursor: pointer;
+      padding: 11px 12px;
+      color: #f8fafc;
+      font-weight: 800;
+      list-style-position: inside;
+    }
+    .sidebar-group ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 8px 10px;
+      display: grid;
+      gap: 6px;
+    }
+    .sidebar-group a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+    .sidebar-group a:hover {
+      color: var(--accent);
+      border-color: var(--border);
+      background: rgba(125, 211, 252, 0.08);
+    }
+    .sidebar-group small {
+      display: block;
+      color: #64748b;
+      font-size: 0.72rem;
+      margin-top: 2px;
+      overflow-wrap: anywhere;
+    }
+    main {
+      max-width: 1120px;
+      width: 100%;
+      padding: 40px 24px 72px;
+    }
+    header, .topic-section, .card, .search-panel {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+    header {
+      padding: 32px;
+      margin-bottom: 18px;
+    }
+    header h1 {
+      margin: 0 0 10px;
+      color: #f8fafc;
+      font-size: clamp(2rem, 4vw, 3.15rem);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 850px;
+      margin: 0;
+    }
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .quick-links a, .chip {
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(125, 211, 252, 0.08);
+      font-size: 0.88rem;
+    }
+    .search-panel {
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .search-panel input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--code-bg);
+      color: var(--text);
+      font: inherit;
+    }
+    .topic-section {
+      padding: 26px;
+      margin: 22px 0;
+      scroll-margin-top: 24px;
+    }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      color: #f8fafc;
+      margin: 0;
+      font-size: 1.6rem;
+    }
+    .section-heading span {
+      color: var(--muted);
+    }
+    .cards {
+      display: grid;
+      gap: 16px;
+    }
+    .card {
+      padding: 22px;
+      background: rgba(15, 23, 42, 0.72);
+      scroll-margin-top: 28px;
+    }
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 10px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.76rem;
+      margin: 0 0 6px;
+      font-weight: 800;
+    }
+    h3 {
+      color: #f8fafc;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      margin: 0;
+    }
+    p {
+      color: var(--text);
+    }
+    .filename {
+      color: var(--muted);
+      margin: 10px 0;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(125, 211, 252, 0.12);
+      color: #dbeafe;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .open-link {
+      color: #020617;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      text-decoration: none;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .status {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border: 1px solid var(--border);
+    }
+    .status.ok {
+      color: var(--good);
+      background: rgba(22, 101, 52, 0.18);
+      border-color: rgba(134, 239, 172, 0.28);
+    }
+    .status.bad {
+      color: var(--bad);
+      background: rgba(127, 29, 29, 0.2);
+      border-color: rgba(252, 165, 165, 0.28);
+    }
+    .mini-list {
+      margin: 12px 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+    .mini-list li {
+      color: var(--muted);
+      margin: 4px 0;
+    }
+    .related {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+    }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 30px;
+      font-size: 0.92rem;
+    }
+    .hidden-by-search { display: none; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      main { padding: 22px 14px 44px; }
+      header, .topic-section, .card { padding: 20px; }
+      .card-top { flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <h1>JavaScript Study Notes</h1>
+        <p>Obsidian-style hub with grouped navigation and verified relative links.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><strong>6</strong>Files</div>
+        <div class="stat"><strong>4</strong>Topics</div>
+        <div class="stat"><strong>0</strong>Broken</div>
+      </div>
+      <nav aria-label="Study note navigation">
+        
+      <details class="sidebar-group" open>
+        <summary>Async / Event Loop</summary>
+        <ul><li><a href="#event-queues-advanced"><span>🔄 JavaScript Event Queues</span><small>event-queues-advanced.html</small></a></li>
+<li><a href="#event-queues"><span>🔄 JavaScript Promise Chain with setTimeout</span><small>event-queues.html</small></a></li>
+<li><a href="#promise-chaining"><span>JavaScript Promise Chaining</span><small>promise-chaining.html</small></a></li></ul>
+      </details>
+    
+      <details class="sidebar-group" open>
+        <summary>Functions</summary>
+        <ul><li><a href="#arrayfunctions-1"><span>JavaScript Arrow Functions</span><small>arrayFunctions(1).html</small></a></li></ul>
+      </details>
+    
+      <details class="sidebar-group" open>
+        <summary>Type System / Coercion</summary>
+        <ul><li><a href="#typecoercion"><span>Type Coercion in JavaScript (ECMAScript 2025)</span><small>typeCoercion.html</small></a></li></ul>
+      </details>
+    
+      <details class="sidebar-group" open>
+        <summary>Type System / Symbols</summary>
+        <ul><li><a href="#symbolcoercion"><span>🔣 JavaScript Symbol Coercion</span><small>symbolCoercion.html</small></a></li></ul>
+      </details>
+    
+      </nav>
+    </aside>
+
+    <main>
+      <header>
+        <h1>JavaScript Study Notes Knowledge Hub</h1>
+        <p class="subtitle">A dashboard for your study-note HTML files, grouped by topic. Links are relative to this <code>index.html</code> file, so the whole <code>study-notes</code> folder can be deployed as-is.</p>
+        <div class="quick-links">
+          <a href="#event-queues-advanced">🔄 JavaScript Event Queues</a><a href="#event-queues">🔄 JavaScript Promise Chain with setTimeout</a><a href="#promise-chaining">JavaScript Promise Chaining</a><a href="#arrayfunctions">JavaScript Arrow Functions</a><a href="#typecoercion">Type Coercion in JavaScript (ECMAScript 2025)</a><a href="#symbolcoercion">🔣 JavaScript Symbol Coercion</a>
+        </div>
+      </header>
+
+      <div class="search-panel">
+        <input id="search" type="search" placeholder="Filter notes by title, topic, file name, or description..." />
+      </div>
+
+      
+      <section class="topic-section" id="async-event-loop">
+        <div class="section-heading">
+          <h2>Async / Event Loop</h2>
+          <span>3 files</span>
+        </div>
+        <div class="cards">
+          
+          <article class="card" id="event-queues-advanced">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Async / Event Loop</p>
+                <h3>🔄 JavaScript Event Queues</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./event-queues-advanced.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>event-queues-advanced.html</code></p>
+            <p>Master the Call Stack, Microtask Queue, and Macrotask Queue</p>
+          </article>
+        
+          <article class="card" id="event-queues">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Async / Event Loop</p>
+                <h3>🔄 JavaScript Promise Chain with setTimeout</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./event-queues.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>event-queues.html</code></p>
+            <p>Understanding call stack, microtask queue, and macrotask queue</p>            
+          </article>
+        
+          <article class="card" id="promise-chaining">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Async / Event Loop</p>
+                <h3>JavaScript Promise Chaining</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./promise-chaining.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>promise-chaining.html</code></p>
+            <p>A focused tutorial based on ECMAScript 2026 Promise semantics and the browser event loop model. The goal is to explain why this code logs in the order it does, especially when synchronous code, resolved promises, fetch() , .then() , .finally() , microtasks, and setTimeout() interact.</p>            
+          </article>
+        
+        </div>
+      </section>
+    
+      <section class="topic-section" id="functions">
+        <div class="section-heading">
+          <h2>Functions</h2>
+          <span>1 file</span>
+        </div>
+        <div class="cards">
+          
+          <article class="card" id="arrayfunctions-1">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Functions</p>
+                <h3>JavaScript Arrow Functions</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./arrayFunctions.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>arrayFunctions(1).html</code></p>
+            <p>A complete tutorial based on ECMAScript 2026 draft semantics. It covers syntax, lexical behavior, common traps, and when arrow functions are the wrong tool.</p>
+            <!-- <ul class='mini-list'><li>1. Summary</li><li>Traditional function</li><li>Arrow function</li><li>Visual: Arrow Function Binding Model</li><li>2. Details</li></ul> -->
+            <div class='related'><strong>Related:</strong> <a class="chip" href="#async-event-loop">Async / Event Loop</a></div>
+          </article>
+        
+        </div>
+      </section>
+    
+      <section class="topic-section" id="type-system-coercion">
+        <div class="section-heading">
+          <h2>Type System / Coercion</h2>
+          <span>1 file</span>
+        </div>
+        <div class="cards">
+          
+          <article class="card" id="typecoercion">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Type System / Coercion</p>
+                <h3>Type Coercion in JavaScript (ECMAScript 2025)</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./typeCoercion.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>typeCoercion.html</code></p>
+            <p>A complete HTML version of the 10-section tutorial, covering the abstract operations, operator behavior, edge cases, and best practices behind JavaScript type coercion.</p>
+            <div class='related'><strong>Related:</strong> <a class="chip" href="#type-system-symbols">Type System / Symbols</a></div>
+          </article>
+        
+        </div>
+      </section>
+    
+      <section class="topic-section" id="type-system-symbols">
+        <div class="section-heading">
+          <h2>Type System / Symbols</h2>
+          <span>1 file</span>
+        </div>
+        <div class="cards">
+          
+          <article class="card" id="symbolcoercion">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Type System / Symbols</p>
+                <h3>🔣 JavaScript Symbol Coercion</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./symbolCoercion.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>symbolCoercion.html</code></p>
+            <p>Understanding how Symbols behave with type conversion</p>
+            <div class='related'><strong>Related:</strong> <a class="chip" href="#type-system-coercion">Type System / Coercion</a></div>
+          </article>
+        
+        </div>
+      </section>
+    
+
+      <p class="footer">Generated from a recursive study-note scan. Local link verification: 6 passed, 0 failed.</p>
+    </main>
+  </div>
+
+  <script id="verified-links" type="application/json">[
+  {
+    &quot;href&quot;: &quot;arrayFunctions(1).html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;event-queues-advanced.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;event-queues.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;promise-chaining.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;symbolCoercion.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;typeCoercion.html&quot;,
+    &quot;exists&quot;: true
+  }
+]</script>
+  <script>
+    const search = document.getElementById('search');
+    const cards = Array.from(document.querySelectorAll('.card'));
+
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      cards.forEach(card => {
+        const hit = card.textContent.toLowerCase().includes(q);
+        card.classList.toggle('hidden-by-search', q && !hit);
+      });
+    });
+  </script>
+</body>
+</html>

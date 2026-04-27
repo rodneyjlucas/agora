@@ -1,0 +1,110 @@
+[
+  {
+    "id": "coercion-001",
+    "type": "output-prediction",
+    "difficulty": "intermediate",
+    "topic": "Type Coercion & Equality",
+    "title": "Loose vs Strict Equality",
+    "description": "Predict the output and explain why each comparison produces its result.",
+    "code": "console.log(5 == '5');\nconsole.log(5 === '5');\nconsole.log(null == undefined);\nconsole.log(null === undefined);\nconsole.log(0 == false);\nconsole.log('' == false);",
+    "expectedOutput": "true\nfalse\ntrue\nfalse\ntrue\ntrue",
+    "solution": "== performs type coercion; === checks both type and value without coercion.\n- 5 == '5': true (string '5' coerces to number 5)\n- 5 === '5': false (different types)\n- null == undefined: true (special case in loose equality)\n- null === undefined: false (different types)\n- 0 == false: true (false coerces to 0)\n- '' == false: true ('' coerces to 0, false coerces to 0)",
+    "explanation": "The == operator triggers type coercion before comparison. If types differ, JavaScript converts them using ToNumber(), ToString(), or ToBoolean() rules. The === operator never coerces types.",
+    "hints": [
+      "Remember the 6 falsy values: false, 0, '', null, undefined, NaN",
+      "null == undefined is a special case — they're loosely equal to each other only",
+      "When comparing with ==, if one operand is a boolean, convert it to a number first"
+    ],
+    "gradingCriteria": {
+      "answerAccuracy": "Must get all 6 outputs correct",
+      "explanationDepth": "Should explain coercion rules and why null/undefined are special"
+    }
+  },
+  {
+    "id": "coercion-002",
+    "type": "theory",
+    "difficulty": "beginner",
+    "topic": "Type Coercion & Equality",
+    "title": "The 6 Falsy Values",
+    "description": "Which of these will execute their console.log? Explain which are truthy and which are falsy.",
+    "code": "if ([]) console.log('A');\nif ({}) console.log('B');\nif ('') console.log('C');\nif (0) console.log('D');\nif (null) console.log('E');\nif (undefined) console.log('F');\nif (NaN) console.log('G');\nif ('false') console.log('H');",
+    "expectedOutput": "A\nB\nH",
+    "solution": "Only A, B, and H log. The 6 falsy values are: false, 0, '', null, undefined, NaN. Everything else is truthy, including empty arrays [], empty objects {}, and the string 'false'.",
+    "explanation": "JavaScript has exactly 6 falsy values. Empty arrays and objects are truthy because they're complex types that exist as objects. The string 'false' is truthy because it's a non-empty string.",
+    "hints": [
+      "Arrays and objects are always truthy, even when empty",
+      "The string 'false' is different from the boolean false",
+      "Memorize: false, 0, '', null, undefined, NaN"
+    ],
+    "gradingCriteria": {
+      "answerAccuracy": "Must correctly identify A, B, H as logging",
+      "explanationDepth": "Should list all 6 falsy values and explain why arrays/objects are truthy"
+    }
+  },
+  {
+    "id": "coercion-003",
+    "type": "output-prediction",
+    "difficulty": "intermediate",
+    "topic": "Type Coercion & Equality",
+    "title": "The Plus Operator & Concatenation",
+    "description": "Predict the output and explain why. Pay attention to when + means concatenation vs addition.",
+    "code": "console.log(1 + '2');\nconsole.log('2' - 1);\nconsole.log('5' * '2');\nconsole.log('hello' + 5);\nconsole.log('hello' - 5);\nconsole.log([] + []);\nconsole.log([] + {});\nconsole.log({} + []);",
+    "expectedOutput": "'12'\n1\n10\n'hello5'\nNaN\n''\n'[object Object]'\n0",
+    "solution": "The + operator behaves differently from other operators:\n- With at least one string: concatenation (converts both to strings)\n- With only numbers: addition\n\nOther operators (-, *, /) always force numeric coercion:\n- '2' - 1 = 1 (string converts to number)\n- 'hello' - 5 = NaN (can't convert 'hello' to number)\n\nArray/object coercion:\n- [].toString() = '' (empty string)\n- {}.toString() = '[object Object]'\n- [] + [] = '' + '' = ''\n- [] + {} = '' + '[object Object]' = '[object Object]'",
+    "explanation": "The + operator has special coercion rules. It prioritizes string concatenation. All other arithmetic operators force numeric coercion. When strings can't convert to numbers, the result is NaN.",
+    "hints": [
+      "The + operator is unique — it does concatenation if ANY operand is a string",
+      "All other operators (-, *, /) force numeric coercion",
+      "[].toString() returns empty string, {}.toString() returns '[object Object]'"
+    ],
+    "gradingCriteria": {
+      "answerAccuracy": "Must get all 8 outputs correct",
+      "explanationDepth": "Should explain why + behaves differently and why 'hello' - 5 = NaN"
+    }
+  },
+  {
+    "id": "coercion-004",
+    "type": "output-prediction",
+    "difficulty": "advanced",
+    "topic": "Type Coercion & Equality",
+    "tags": ["type-coercion"],
+    "title": "Complex Equality Comparisons",
+    "description": "Predict each comparison and explain the coercion path. These are tricky!",
+    "code": "console.log([] == false);\nconsole.log([] == true);\nconsole.log([1] == true);\nconsole.log([1,2] == true);\nconsole.log('1' == true);\nconsole.log(2 == true);\nconsole.log(null == 0);\nconsole.log(undefined == 0);",
+    "expectedOutput": "true\nfalse\ntrue\nfalse\ntrue\nfalse\nfalse\nfalse",
+    "solution": "When comparing array/object with boolean using ==:\n- [] == false: [] → '' → 0, false → 0, so 0 == 0 = true\n- [] == true: [] → '' → 0, true → 1, so 0 == 1 = false\n- [1] == true: [1] → '1' → 1, true → 1, so 1 == 1 = true\n- [1,2] == true: [1,2] → '1,2' → NaN, true → 1, so NaN == 1 = false\n- '1' == true: '1' → 1, true → 1, so 1 == 1 = true\n- 2 == true: 2 → 2, true → 1, so 2 == 1 = false\n- null == 0: null is ONLY loosely equal to undefined, not 0\n- undefined == 0: undefined is ONLY loosely equal to null, not 0",
+    "explanation": "When comparing different types, JavaScript coerces to numbers. Booleans convert to 0 or 1. Arrays convert to their string representation first, then to numbers. null and undefined are special — they're only loosely equal to each other.",
+    "hints": [
+      "[].toString() = '', '1'.toString() = '1', [1,2].toString() = '1,2'",
+      "When array converts to string with multiple elements, the result might be NaN",
+      "null and undefined are NOT loosely equal to 0 or any falsy value"
+    ],
+    "gradingCriteria": {
+      "answerAccuracy": "Must get all 8 comparisons correct",
+      "explanationDepth": "Should show the coercion path for each comparison, especially null/undefined cases"
+    }
+  },
+  {
+    "id": "coercion-005",
+    "type": "output-prediction",
+    "difficulty": "advanced",
+    "topic": "Type Coercion & Equality",
+    "tags": ["type-coercion", "valueOf-toString"],
+    "title": "Object Coercion with valueOf and toString",
+    "description": "Predict the output when objects with custom valueOf and toString methods are coerced.",
+    "code": "const obj1 = { valueOf() { return 42; } };\nconst obj2 = { toString() { return 'hello'; } };\nconst obj3 = { valueOf() { return 10; }, toString() { return '5'; } };\n\nconsole.log(obj1 + 0);\nconsole.log(obj2 + 0);\nconsole.log(obj3 + 0);\nconsole.log(String(obj2));\nconsole.log(Number(obj1));\nconsole.log(obj1 == 42);\nconsole.log(obj3 == '5');",
+    "expectedOutput": "42\n'hello0'\n10\n'hello'\n42\ntrue\nfalse",
+    "solution": "JavaScript calls valueOf() first for numeric coercion, then toString() if valueOf returns an object.\n\n- obj1 + 0: valueOf() returns 42, so 42 + 0 = 42\n- obj2 + 0: valueOf() returns object, so calls toString() → 'hello', then 'hello' + 0 = 'hello0'\n- obj3 + 0: valueOf() returns 10, so 10 + 0 = 10 (toString() is not called)\n- String(obj2): Calls toString() directly → 'hello'\n- Number(obj1): Calls valueOf() → 42\n- obj1 == 42: valueOf() returns 42, so 42 == 42 = true\n- obj3 == '5': valueOf() returns 10, so 10 == '5' → 10 == 5 = false (not '5')",
+    "explanation": "When coercing objects to primitives, JavaScript follows a preference order: valueOf() is tried first for numeric contexts, toString() for string contexts. If valueOf() returns a primitive, it's used; otherwise toString() is called. The key insight is that valueOf() has priority in numeric operations, but String() explicitly calls toString().",
+    "hints": [
+      "valueOf() is preferred in numeric contexts (arithmetic, comparison)",
+      "toString() is called as a fallback if valueOf() returns an object",
+      "String() explicitly calls toString() without trying valueOf() first",
+      "In obj3 == '5', valueOf returns 10 (not used as fallback to toString)"
+    ],
+    "gradingCriteria": {
+      "answerAccuracy": "Must get all 7 outputs correct, especially the valueOf vs toString priority",
+      "explanationDepth": "Should explain the valueOf/toString preference order and why String(obj2) returns 'hello' not '[object Object]'"
+    }
+  }
+]

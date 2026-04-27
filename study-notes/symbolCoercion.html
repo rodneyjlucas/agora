@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Symbol Coercion - Mental Model</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .mental-model {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .mental-model h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .rule-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+
+        .rule-box:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .rule-type {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .allowed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .forbidden {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .rule-box h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .rule-box p {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .interactive-demo {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #667eea;
+        }
+
+        .interactive-demo h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .demo-item h4 {
+            color: #1e3c72;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .function { color: #dcdcaa; }
+        .code-block .error { color: #f48771; }
+
+        .result {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .error-result {
+            background: #ffe7e7;
+            border-left: 4px solid #cc0000;
+        }
+
+        .try-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .try-button:hover {
+            background: #5568d3;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .summary-box h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .summary-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .summary-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .summary-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .visual-diagram {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .diagram-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .conversion-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            min-width: 200px;
+        }
+
+        .conversion-box.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .conversion-box.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            margin: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔣 JavaScript Symbol Coercion</h1>
+            <p>Understanding how Symbols behave with type conversion</p>
+        </div>
+
+        <div class="content">
+            <div class="mental-model">
+                <h2>Mental Model: The Core Principle</h2>
+                <p style="font-size: 1.2em; color: #1e3c72; font-weight: 500; margin-bottom: 20px;">
+                    <strong>Symbols are deliberately non-coercible</strong> to prevent accidental conversion and preserve their uniqueness. 
+                    They only allow <em>explicit</em> conversions that maintain clarity.
+                </p>
+
+                <div class="rule-box">
+                    <span class="rule-type allowed">✓ ALLOWED</span>
+                    <h3>Explicit String Conversion</h3>
+                    <p>You can explicitly convert a Symbol to a string using <code>String()</code> or <code>.toString()</code></p>
+                    <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'mySymbol'</span>);
+<span class="function">String</span>(sym);        <span class="comment">// "Symbol(mySymbol)" ✓</span>
+sym.<span class="function">toString</span>();     <span class="comment">// "Symbol(mySymbol)" ✓</span>
+                    </div>
+                </div>
+
+                <div class="rule-box">
+                    <span class="rule-type allowed">✓ ALLOWED</span>
+                    <h3>Boolean Conversion</h3>
+                    <p>Symbols are always truthy when converted to boolean</p>
+                    <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'test'</span>);
+<span class="function">Boolean</span>(sym);      <span class="comment">// true ✓</span>
+!!sym;              <span class="comment">// true ✓</span>
+<span class="keyword">if</span> (sym) { }       <span class="comment">// Works fine ✓</span>
+                    </div>
+                </div>
+
+                <div class="rule-box">
+                    <span class="rule-type forbidden">✗ FORBIDDEN</span>
+                    <h3>Implicit String Coercion</h3>
+                    <p>Attempting to implicitly convert a Symbol to a string throws a TypeError</p>
+                    <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'test'</span>);
+<span class="string">'prefix'</span> + sym;     <span class="comment">// TypeError ✗</span>
+<span class="string">`template ${sym}`</span>; <span class="comment">// TypeError ✗</span>
+sym + <span class="string">''</span>;            <span class="comment">// TypeError ✗</span>
+                    </div>
+                </div>
+
+                <div class="rule-box">
+                    <span class="rule-type forbidden">✗ FORBIDDEN</span>
+                    <h3>Number Conversion</h3>
+                    <p>Symbols cannot be converted to numbers in any way</p>
+                    <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'test'</span>);
+<span class="function">Number</span>(sym);       <span class="comment">// TypeError ✗</span>
++sym;               <span class="comment">// TypeError ✗</span>
+sym + <span class="keyword">1</span>;           <span class="comment">// TypeError ✗</span>
+sym * <span class="keyword">2</span>;           <span class="comment">// TypeError ✗</span>
+                    </div>
+                </div>
+
+                <div class="rule-box">
+                    <span class="rule-type allowed">✓ ALLOWED</span>
+                    <h3>Object Property Keys</h3>
+                    <p>Symbols can be used directly as object property keys without conversion</p>
+                    <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'key'</span>);
+<span class="keyword">const</span> obj = { [sym]: <span class="string">'value'</span> };  <span class="comment">// ✓</span>
+obj[sym];                           <span class="comment">// 'value' ✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-diagram">
+                <h2>Visual Coercion Map</h2>
+                <div class="diagram-container">
+                    <div class="conversion-box">
+                        <h4>Symbol</h4>
+                        <code>Symbol('x')</code>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="conversion-box success">
+                        <h4>String (Explicit)</h4>
+                        <code>String(sym)</code><br>
+                        ✓ "Symbol(x)"
+                    </div>
+                </div>
+
+                <div class="diagram-container">
+                    <div class="conversion-box">
+                        <h4>Symbol</h4>
+                        <code>Symbol('x')</code>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="conversion-box success">
+                        <h4>Boolean</h4>
+                        <code>Boolean(sym)</code><br>
+                        ✓ true
+                    </div>
+                </div>
+
+                <div class="diagram-container">
+                    <div class="conversion-box">
+                        <h4>Symbol</h4>
+                        <code>Symbol('x')</code>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="conversion-box error">
+                        <h4>String (Implicit)</h4>
+                        <code>'' + sym</code><br>
+                        ✗ TypeError
+                    </div>
+                </div>
+
+                <div class="diagram-container">
+                    <div class="conversion-box">
+                        <h4>Symbol</h4>
+                        <code>Symbol('x')</code>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="conversion-box error">
+                        <h4>Number</h4>
+                        <code>Number(sym)</code><br>
+                        ✗ TypeError
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h2>Interactive Examples</h2>
+                <p style="margin-bottom: 20px;">Click the buttons to see Symbol coercion in action</p>
+
+                <div class="demo-grid">
+                    <div class="demo-item">
+                        <h4>✓ Explicit String Conversion</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="function">String</span>(sym);
+                        </div>
+                        <button class="try-button" onclick="tryExplicitString()">Try it</button>
+                        <div id="result1"></div>
+                    </div>
+
+                    <div class="demo-item">
+                        <h4>✗ Implicit String Coercion</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="string">'text'</span> + sym;
+                        </div>
+                        <button class="try-button" onclick="tryImplicitString()">Try it</button>
+                        <div id="result2"></div>
+                    </div>
+
+                    <div class="demo-item">
+                        <h4>✓ Boolean Conversion</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="function">Boolean</span>(sym);
+!!sym;
+                        </div>
+                        <button class="try-button" onclick="tryBoolean()">Try it</button>
+                        <div id="result3"></div>
+                    </div>
+
+                    <div class="demo-item">
+                        <h4>✗ Number Conversion</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="function">Number</span>(sym);
+                        </div>
+                        <button class="try-button" onclick="tryNumber()">Try it</button>
+                        <div id="result4"></div>
+                    </div>
+
+                    <div class="demo-item">
+                        <h4>✓ Template Literal (Explicit)</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="string">`Value: ${</span><span class="function">String</span>(sym)<span class="string">}`</span>;
+                        </div>
+                        <button class="try-button" onclick="tryTemplateExplicit()">Try it</button>
+                        <div id="result5"></div>
+                    </div>
+
+                    <div class="demo-item">
+                        <h4>✗ Template Literal (Implicit)</h4>
+                        <div class="code-block">
+<span class="keyword">const</span> sym = <span class="function">Symbol</span>(<span class="string">'demo'</span>);
+<span class="string">`Value: ${sym}`</span>;
+                        </div>
+                        <button class="try-button" onclick="tryTemplateImplicit()">Try it</button>
+                        <div id="result6"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <h2>Key Takeaways</h2>
+                <ul>
+                    <li><strong>Symbols are designed to be non-coercible</strong> to prevent accidental misuse and maintain their role as unique identifiers</li>
+                    <li><strong>Explicit conversions are OK:</strong> Use String() or .toString() when you need a string representation</li>
+                    <li><strong>Implicit conversions throw errors:</strong> String concatenation, template literals (without explicit conversion), and number operations all fail</li>
+                    <li><strong>Boolean context works:</strong> Symbols are always truthy, so they work fine in if statements and logical operations</li>
+                    <li><strong>Direct use as keys:</strong> Symbols can be used directly as object property keys without any conversion</li>
+                    <li><strong>Why this design?</strong> Prevents bugs like accidentally using a Symbol as a string key or in calculations, preserving their uniqueness</li>
+                </ul>
+            </div>
+
+            <div class="mental-model" style="margin-top: 30px;">
+                <h2>The "Why" Behind the Design</h2>
+                <p style="line-height: 1.8; color: #495057;">
+                    Symbols were introduced in ES6 as a new primitive type to create <strong>guaranteed unique identifiers</strong>. 
+                    The strict coercion rules exist because:
+                </p>
+                <ul style="margin-top: 15px; padding-left: 20px; line-height: 1.8; color: #495057;">
+                    <li><strong>Uniqueness preservation:</strong> If Symbols could be implicitly converted to strings, two different Symbols might accidentally produce the same string, defeating their purpose</li>
+                    <li><strong>Explicit intent:</strong> Forcing explicit conversion makes the developer's intention clear and prevents accidental type coercion bugs</li>
+                    <li><strong>Property key safety:</strong> Symbols as property keys won't clash with string keys, but this only works if they can't accidentally become strings</li>
+                    <li><strong>Fail-fast principle:</strong> Throwing errors on invalid operations helps catch bugs early rather than allowing silent failures</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, result, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = isError ? 'result error-result' : 'result';
+            element.textContent = result;
+        }
+
+        function tryExplicitString() {
+            const sym = Symbol('demo');
+            const result = String(sym);
+            showResult('result1', `✓ Result: ${result}`);
+        }
+
+        function tryImplicitString() {
+            const sym = Symbol('demo');
+            try {
+                const result = 'text' + sym;
+                showResult('result2', `Result: ${result}`);
+            } catch (e) {
+                showResult('result2', `✗ ${e.name}: ${e.message}`, true);
+            }
+        }
+
+        function tryBoolean() {
+            const sym = Symbol('demo');
+            const result1 = Boolean(sym);
+            const result2 = !!sym;
+            showResult('result3', `✓ Boolean(sym): ${result1}\n✓ !!sym: ${result2}`);
+        }
+
+        function tryNumber() {
+            const sym = Symbol('demo');
+            try {
+                const result = Number(sym);
+                showResult('result4', `Result: ${result}`);
+            } catch (e) {
+                showResult('result4', `✗ ${e.name}: ${e.message}`, true);
+            }
+        }
+
+        function tryTemplateExplicit() {
+            const sym = Symbol('demo');
+            const result = `Value: ${String(sym)}`;
+            showResult('result5', `✓ Result: ${result}`);
+        }
+
+        function tryTemplateImplicit() {
+            const sym = Symbol('demo');
+            try {
+                const result = `Value: ${sym}`;
+                showResult('result6', `Result: ${result}`);
+            } catch (e) {
+                showResult('result6', `✗ ${e.name}: ${e.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

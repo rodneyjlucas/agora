@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Type Coercion in JavaScript (ECMAScript 2025)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --border: #334155;
+      --code-bg: #0b1220;
+      --code-text: #dbeafe;
+      --table-head: #1e293b;
+      --ok: #86efac;
+      --warn: #fcd34d;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    header {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+      color: #f8fafc;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      padding-top: 8px;
+      font-size: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 1.15rem;
+      color: #dbeafe;
+    }
+
+    p, li {
+      color: var(--text);
+    }
+
+    .lede {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .section {
+      background: rgba(17, 24, 39, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(96, 165, 250, 0.12);
+      color: #dbeafe;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 14px 0 18px;
+      padding: 16px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 1px solid #1e3a8a;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 20px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--table-head);
+      color: #eff6ff;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,.02);
+    }
+
+    .callout {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.75);
+    }
+
+    .callout strong {
+      color: #f8fafc;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+
+    .toc {
+      margin-top: 18px;
+      padding-left: 18px;
+      columns: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover { text-decoration: underline; }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .toc { columns: 1; }
+      .container { padding: 20px 14px 40px; }
+      .section { padding: 18px; }
+      h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Type Coercion in JavaScript (ECMAScript 2025)</h1>
+      <p class="lede">
+        A complete HTML version of the 10-section tutorial, covering the abstract operations,
+        operator behavior, edge cases, and best practices behind JavaScript type coercion.
+      </p>
+      <ol class="toc">
+        <li><a href="#section-1">Mental Model</a></li>
+        <li><a href="#section-2">Core Abstract Operations</a></li>
+        <li><a href="#section-3">Operator Coercion</a></li>
+        <li><a href="#section-4">Object Coercion</a></li>
+        <li><a href="#section-5">Special Cases</a></li>
+        <li><a href="#section-6">BigInt</a></li>
+        <li><a href="#section-7">Symbol</a></li>
+        <li><a href="#section-8">Best Practices</a></li>
+        <li><a href="#section-9">Interview Traps</a></li>
+        <li><a href="#section-10">Final Takeaway</a></li>
+      </ol>
+    </header>
+
+    <section class="section" id="section-1">
+      <h2>1. Mental Model</h2>
+      <p>
+        Type coercion is the conversion of values between types using ECMAScript-defined rules.
+      </p>
+      <p>It occurs in:</p>
+      <ul>
+        <li>Operators (<code>+</code>, <code>==</code>, <code>&lt;</code>)</li>
+        <li>Control flow (<code>if</code>, <code>while</code>)</li>
+        <li>Built-ins (<code>Number()</code>, <code>String()</code>)</li>
+      </ul>
+      <div class="callout">
+        <strong>Key idea:</strong> JavaScript coercion is not random. It is rule-based, but often non-intuitive.
+      </div>
+    </section>
+
+    <section class="section" id="section-2">
+      <h2>2. Core Abstract Operations</h2>
+
+      <h3>ToPrimitive</h3>
+      <p>Converts objects to primitives.</p>
+      <pre><code>const obj = {
+  [Symbol.toPrimitive](hint) {
+    return hint === "number" ? 10 : "hello";
+  }
+};
+
++obj;        // 10
+String(obj); // "hello"</code></pre>
+
+      <h3>ToNumber</h3>
+      <table>
+        <thead>
+          <tr><th>Input</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>undefined</td><td>NaN</td></tr>
+          <tr><td>null</td><td>0</td></tr>
+          <tr><td>true</td><td>1</td></tr>
+          <tr><td>false</td><td>0</td></tr>
+          <tr><td>""</td><td>0</td></tr>
+          <tr><td>"123"</td><td>123</td></tr>
+          <tr><td>"abc"</td><td>NaN</td></tr>
+          <tr><td>[]</td><td>0</td></tr>
+          <tr><td>[1]</td><td>1</td></tr>
+          <tr><td>{}</td><td>NaN</td></tr>
+        </tbody>
+      </table>
+
+      <h3>ToString</h3>
+      <table>
+        <thead>
+          <tr><th>Input</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>null</td><td>"null"</td></tr>
+          <tr><td>undefined</td><td>"undefined"</td></tr>
+          <tr><td>true</td><td>"true"</td></tr>
+          <tr><td>123</td><td>"123"</td></tr>
+          <tr><td>[1,2]</td><td>"1,2"</td></tr>
+          <tr><td>{}</td><td>"[object Object]"</td></tr>
+        </tbody>
+      </table>
+
+      <h3>ToBoolean</h3>
+      <p>Falsy values:</p>
+      <pre><code>false, 0, -0, 0n, "", null, undefined, NaN</code></pre>
+      <p>Everything else is truthy.</p>
+    </section>
+
+    <section class="section" id="section-3">
+      <h2>3. Operator Coercion</h2>
+
+      <h3>Addition (<code>+</code>)</h3>
+      <pre><code>1 + 2;       // 3
+"1" + 2;     // "12"
+1 + "2";     // "12"</code></pre>
+      <p>Rule:</p>
+      <ul>
+        <li>If either operand is a string → concatenate</li>
+        <li>Otherwise → numeric addition</li>
+      </ul>
+
+      <h3>Equality (<code>==</code>)</h3>
+      <pre><code>[] == false;        // true
+"" == 0;            // true
+null == undefined;  // true</code></pre>
+
+      <h3>Strict Equality (<code>===</code>)</h3>
+      <pre><code>0 === false; // false
+"" === 0;    // false</code></pre>
+
+      <h3>Relational Operators</h3>
+      <pre><code>"2" &lt; 10;   // true
+"10" &lt; "2"; // true (string comparison)</code></pre>
+    </section>
+
+    <section class="section" id="section-4">
+      <h2>4. Object Coercion</h2>
+      <pre><code>const obj = {
+  valueOf() { return 10; },
+  toString() { return "20"; }
+};
+
+obj + 5; // 15</code></pre>
+      <div class="callout">
+        <strong>Reminder:</strong> For ordinary object-to-primitive conversion, JavaScript may try
+        <code>valueOf()</code> before <code>toString()</code>, depending on the preferred type.
+      </div>
+    </section>
+
+    <section class="section" id="section-5">
+      <h2>5. Special Cases</h2>
+      <pre><code>NaN === NaN;          // false
+Object.is(NaN, NaN); // true
+
+null == undefined;   // true
+null === undefined;  // false
+
+[] + [];  // ""
+[] + {};  // "[object Object]"
+{} + [];  // 0</code></pre>
+    </section>
+
+    <section class="section" id="section-6">
+      <h2>6. BigInt</h2>
+      <pre><code>1n + 1;   // TypeError
+1n == 1;  // true
+1n === 1; // false</code></pre>
+      <p>
+        <span class="warn">Important:</span> <code>BigInt</code> and <code>Number</code> do not mix in arithmetic.
+      </p>
+    </section>
+
+    <section class="section" id="section-7">
+      <h2>7. Symbol</h2>
+      <pre><code>const s = Symbol("x");
+
+String(s); // "Symbol(x)"
++s;        // TypeError</code></pre>
+      <p>Symbols can be stringified explicitly, but numeric coercion fails.</p>
+    </section>
+
+    <section class="section" id="section-8">
+      <h2>8. Best Practices</h2>
+      <ul>
+        <li>Prefer <code>===</code></li>
+        <li>Use explicit conversions (<code>Number</code>, <code>String</code>, <code>Boolean</code>)</li>
+        <li>Avoid implicit coercion with <code>+</code></li>
+        <li>Use <code>Number.isNaN</code></li>
+        <li>Use <code>value == null</code> for null/undefined checks</li>
+      </ul>
+      <div class="callout">
+        <strong class="ok">Practical rule:</strong> Be explicit unless you intentionally want coercion.
+      </div>
+    </section>
+
+    <section class="section" id="section-9">
+      <h2>9. Interview Traps</h2>
+      <pre><code>[] == ![]; // true</code></pre>
+      <pre><code>"5" - 3; // 2</code></pre>
+      <pre><code>"5" + 3; // "53"</code></pre>
+      <pre><code>{} + []; // 0</code></pre>
+    </section>
+
+    <section class="section" id="section-10">
+      <h2>10. Final Takeaway</h2>
+      <p>Type coercion is:</p>
+      <ul>
+        <li>Deterministic</li>
+        <li>Rule-based</li>
+        <li>Often non-intuitive</li>
+      </ul>
+      <p>Master:</p>
+      <ul>
+        <li>Conversion rules</li>
+        <li>Operator behavior</li>
+        <li>Edge cases</li>
+      </ul>
+    </section>
+
+    <p class="footer">Generated as a complete standalone HTML reference.</p>
+  </div>
+</body>
+</html>

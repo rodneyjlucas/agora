@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Event Queues - Complete Tutorial</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel-2: #1f2937;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-2: #a78bfa;
+            --border: #334155;
+            --code-bg: #0b1220;
+            --code-text: #dbeafe;
+            --table-head: #1e293b;
+            --ok: #86efac;
+            --warn: #fcd34d;
+            --bad: #fca5a5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.65;
+            color: var(--text);
+            background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px 64px;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        header {
+            margin-bottom: 32px;
+            padding: 28px;
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.25);
+            color: var(--text);
+            text-align: left;
+        }
+
+        header h1 {
+            line-height: 1.25;
+            margin-top: 0;
+            color: #f8fafc;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: 12px;
+            letter-spacing: -0.03em;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 1.05rem;
+            margin: 0 0 8px;
+            opacity: 1;
+        }
+
+        .content { padding: 0; }
+
+        .section {
+            background: rgba(17, 24, 39, 0.78);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            margin: 18px 0;
+            box-shadow: 0 8px 24px rgba(0,0,0,.18);
+        }
+
+        .section h2,
+        .section h3,
+        .section h4,
+        h1, h2, h3, h4 {
+            line-height: 1.25;
+            margin-top: 0;
+            color: #f8fafc;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            padding-top: 8px;
+            font-size: 1.5rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 0;
+            padding-bottom: 0;
+            margin-bottom: 20px;
+            color: #f8fafc;
+        }
+
+        .section h3 {
+            margin-top: 24px;
+            margin-bottom: 14px;
+            font-size: 1.15rem;
+            color: #dbeafe;
+        }
+
+        .section h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            color: var(--accent);
+        }
+
+        p, li, td { color: var(--text); }
+        strong { color: #f8fafc; }
+        em { color: var(--muted) !important; }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            background: rgba(96, 165, 250, 0.12) !important;
+            color: #dbeafe !important;
+            padding: 0.15rem 0.35rem;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .code-block-wrapper {
+            position: relative;
+            margin: 18px 0;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            max-width: calc(100% - 24px);
+            white-space: nowrap;
+            background: rgba(96, 165, 250, 0.92);
+            color: #eff6ff;
+            border: 1px solid rgba(191, 219, 254, 0.22);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 6px 16px rgba(0,0,0,.28);
+            backdrop-filter: blur(6px);
+        }
+
+        .copy-button:hover {
+            background: rgba(125, 211, 252, 0.95);
+            color: #082f49;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(0,0,0,.32);
+        }
+
+        .copy-button.copied { background: rgba(134, 239, 172, 0.95); color: #052e16; }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid #1e3a8a;
+            border-left: 4px solid var(--accent);
+            padding: 0;
+            margin: 14px 0 18px;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        }
+
+        .code-language {
+            display: block;
+            background: var(--table-head);
+            color: #eff6ff;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            text-transform: lowercase;
+        }
+
+        .code-content { display: flex; width: 100%; min-width: 0; }
+        .line-numbers {
+            background: rgba(2, 6, 23, 0.72);
+            color: #64748b;
+            padding: 15px 0;
+            text-align: right;
+            user-select: none;
+            min-width: 50px;
+            border-right: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+        .line-number { padding: 0 14px; display: block; }
+        .code-text {
+            flex: 1;
+            min-width: 0;
+            padding: 15px;
+            color: var(--code-text);
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .code-text .comment { color: #94a3b8; }
+        .code-text .keyword { color: #93c5fd; }
+        .code-text .string { color: #86efac; }
+        .code-text .function { color: #d2a8ff; }
+        .code-text .number { color: #fcd34d; }
+
+        .challenge-box,
+        .mental-model,
+        .summary-box,
+        .gotcha-box,
+        .best-practice-box,
+        .example-box,
+        .queue-column,
+        .queue-box,
+        .queue-item,
+        .timeline-content,
+        .key-points,
+        .diagram-container,
+        .real-world-example,
+        .challenge-question,
+        .output-block {
+            background: rgba(30, 41, 59, 0.75) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            color: var(--text) !important;
+            box-shadow: none;
+        }
+
+        .challenge-box,
+        .gotcha-box { border-left: 5px solid var(--bad) !important; padding: 18px; margin: 18px 0; }
+        .best-practice-box,
+        .summary-box,
+        .key-points { border-left: 5px solid var(--ok) !important; padding: 18px; margin: 18px 0; }
+        .mental-model,
+        .diagram-container,
+        .real-world-example,
+        .example-box { border-left: 5px solid var(--accent) !important; padding: 18px; margin: 18px 0; }
+
+        .challenge-box h3,
+        .gotcha-box strong,
+        .best-practice-box strong,
+        .summary-box h3,
+        .mental-model h3,
+        .example-header,
+        .real-world-example h4,
+        .key-points strong { color: #f8fafc !important; }
+
+        .challenge-question { border-left: 4px solid var(--warn) !important; padding: 14px 16px; margin: 14px 0; font-weight: 600; }
+        .example-container,
+        .queue-examples { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin: 20px 0; }
+        .example-header,
+        .queue-column h4 { background: var(--table-head) !important; color: #eff6ff !important; padding: 12px 14px; border-radius: 10px; margin: 0 0 14px 0; font-weight: 700; }
+        .example-content { padding: 0; }
+        .queue-item { padding: 12px; margin: 10px 0; font-size: 0.92rem; }
+        .queue-item strong,
+        .queue-box h4,
+        .timeline-content strong { color: #f8fafc !important; }
+        .queue-item p,
+        .queue-column p,
+        .queue-box p,
+        .timeline-content p,
+        .summary-box p { color: var(--text) !important; }
+
+        .queue-diagram {
+            background: rgba(15, 23, 42, 0.58) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 14px;
+            padding: 18px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .timeline { margin: 20px 0; }
+        .timeline-item { display: flex; margin-bottom: 20px; position: relative; padding-left: 40px; }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 3px solid var(--bg);
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        .timeline-item:after { content: ''; position: absolute; left: 8px; top: 20px; width: 4px; height: 20px; background: var(--accent); }
+        .timeline-item:last-child:after { display: none; }
+
+        table,
+        .execution-table,
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 20px;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.58) !important;
+            box-shadow: none;
+        }
+        thead,
+        .execution-table thead,
+        .comparison-table thead { background: var(--table-head) !important; color: #eff6ff !important; }
+        th,
+        td,
+        .execution-table th,
+        .execution-table td,
+        .comparison-table th,
+        .comparison-table td {
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border) !important;
+            color: var(--text);
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+        th,
+        .execution-table th,
+        .comparison-table th { font-weight: 700; color: #eff6ff !important; }
+        tbody tr:hover,
+        .execution-table tbody tr:hover { background: rgba(96, 165, 250, 0.08) !important; }
+        tbody tr:nth-child(even),
+        tbody tr:nth-child(even) td,
+        .execution-table tbody tr:nth-child(even),
+        .execution-table tbody tr:nth-child(even) td { background: rgba(255,255,255,.02) !important; }
+        .call-stack-row,
+        .microtask-row,
+        .macrotask-row { background: rgba(255,255,255,.02) !important; }
+
+        .output-block {
+            border-left: 5px solid var(--ok) !important;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.95rem;
+            color: var(--ok) !important;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .badge,
+        .phase-indicator,
+        .step-number { display: inline-block; border-radius: 999px; font-size: 0.82rem; font-weight: 700; line-height: 1; }
+        .badge,
+        .phase-indicator { padding: 5px 10px; margin-right: 6px; margin-bottom: 6px; background: rgba(96, 165, 250, 0.14) !important; color: #bfdbfe !important; border: 1px solid rgba(96, 165, 250, 0.22); }
+        .badge-call-stack { background: rgba(252, 165, 165, 0.14) !important; color: #fecaca !important; border-color: rgba(252, 165, 165, 0.22); }
+        .badge-microtask { background: rgba(134, 239, 172, 0.14) !important; color: #bbf7d0 !important; border-color: rgba(134, 239, 172, 0.22); }
+        .badge-macrotask { background: rgba(252, 211, 77, 0.14) !important; color: #fde68a !important; border-color: rgba(252, 211, 77, 0.22); }
+        .step-number { background: var(--accent) !important; color: #082f49 !important; width: 28px; height: 28px; line-height: 28px; text-align: center; margin-right: 10px; }
+        .highlight { background: rgba(252, 211, 77, 0.14) !important; color: #fde68a !important; padding: 2px 6px; border-radius: 6px; }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; border-bottom: 1px solid var(--border); }
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--muted);
+            border-bottom: 3px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+        .tab-button:hover,
+        .tab-button.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(96, 165, 250, 0.08); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        footer {
+            margin-top: 28px;
+            padding: 20px;
+            text-align: center;
+            color: var(--muted);
+            background: transparent;
+            border-top: 1px solid var(--border);
+        }
+        footer p { color: var(--muted); }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px 14px 40px; }
+            header,
+            .section { padding: 18px; }
+            header h1 { font-size: 1.7rem; }
+            .queue-diagram,
+            .queue-examples,
+            .example-container { grid-template-columns: 1fr; }
+            th,
+            td,
+            .execution-table th,
+            .execution-table td,
+            .comparison-table th,
+            .comparison-table td { padding: 8px 10px; font-size: 0.85rem; }
+        }
+    </style>
+
+
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 JavaScript Event Queues</h1>
+            <p>Master the Call Stack, Microtask Queue, and Macrotask Queue</p>
+            <p style="font-size: 0.95em; opacity: 0.9;">A complete tutorial with challenging code examples and detailed explanations</p>
+        </header>
+
+        <div class="content">
+            <!-- CHALLENGE SECTION -->
+            <div class="section">
+                <h2>🎯 The Challenge: Predict the Output</h2>
+                <p>Before reading the explanation, try to predict what these code snippets will output and in what order. This is harder than it seems!</p>
+
+                <div class="challenge-box">
+                    <h3>Challenge 1: Browser WebSocket</h3>
+                    <div class="challenge-question">
+                        What is the output order? When do Promises execute? When do WebSocket events fire? When can users click?
+                    </div>
+                    <div class="code-block-wrapper">
+                        <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        <div class="code-block">
+                            <div class="code-language">javascript</div>
+                            <div class="code-content">
+                                <div class="line-numbers">
+                                    <span class="line-number">1</span>
+                                    <span class="line-number">2</span>
+                                    <span class="line-number">3</span>
+                                    <span class="line-number">4</span>
+                                    <span class="line-number">5</span>
+                                    <span class="line-number">6</span>
+                                    <span class="line-number">7</span>
+                                    <span class="line-number">8</span>
+                                    <span class="line-number">9</span>
+                                    <span class="line-number">10</span>
+                                    <span class="line-number">11</span>
+                                    <span class="line-number">12</span>
+                                    <span class="line-number">13</span>
+                                    <span class="line-number">14</span>
+                                    <span class="line-number">15</span>
+                                    <span class="line-number">16</span>
+                                    <span class="line-number">17</span>
+                                    <span class="line-number">18</span>
+                                    <span class="line-number">19</span>
+                                    <span class="line-number">20</span>
+                                    <span class="line-number">21</span>
+                                    <span class="line-number">22</span>
+                                    <span class="line-number">23</span>
+                                    <span class="line-number">24</span>
+                                    <span class="line-number">25</span>
+                                </div>
+                                <div class="code-text"><span class="function">console.log</span>(<span class="string">'1: App initialized'</span>);
+
+<span class="keyword">const</span> ws = <span class="keyword">new</span> <span class="function">WebSocket</span>(<span class="string">'ws://localhost:8080'</span>);
+
+ws.<span class="function">onopen</span> = <span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'6: WebSocket connected'</span>);
+};
+
+ws.<span class="function">onmessage</span> = <span class="function">(event)</span> => {
+  <span class="function">console.log</span>(<span class="string">'7: Message received'</span>);
+  <span class="function">Promise</span>.<span class="function">resolve</span>().<span class="function">then</span>(<span class="function">()</span> => {
+    <span class="function">console.log</span>(<span class="string">'8: Message processed'</span>);
+  });
+};
+
+<span class="function">document</span>.<span class="function">addEventListener</span>(<span class="string">'click'</span>, <span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'9: User clicked'</span>);
+});
+
+<span class="function">Promise</span>.<span class="function">resolve</span>().<span class="function">then</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'2: Promise 1'</span>);
+}).<span class="function">then</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'3: Promise 2'</span>);
+});
+
+<span class="function">setTimeout</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'4: Timeout fired'</span>);
+}, <span class="number">0</span>);
+
+<span class="function">console.log</span>(<span class="string">'5: Setup complete'</span>);</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>Challenge 2: Node.js File Operations</h3>
+                    <div class="challenge-question">
+                        What executes first? How do Promises, file I/O, and timers interact? Where does process.nextTick fit in?
+                    </div>
+                    <div class="code-block-wrapper">
+                        <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        <div class="code-block">
+                            <div class="code-language">javascript</div>
+                            <div class="code-content">
+                                <div class="line-numbers">
+                                    <span class="line-number">1</span>
+                                    <span class="line-number">2</span>
+                                    <span class="line-number">3</span>
+                                    <span class="line-number">4</span>
+                                    <span class="line-number">5</span>
+                                    <span class="line-number">6</span>
+                                    <span class="line-number">7</span>
+                                    <span class="line-number">8</span>
+                                    <span class="line-number">9</span>
+                                    <span class="line-number">10</span>
+                                    <span class="line-number">11</span>
+                                    <span class="line-number">12</span>
+                                    <span class="line-number">13</span>
+                                    <span class="line-number">14</span>
+                                    <span class="line-number">15</span>
+                                    <span class="line-number">16</span>
+                                    <span class="line-number">17</span>
+                                    <span class="line-number">18</span>
+                                    <span class="line-number">19</span>
+                                    <span class="line-number">20</span>
+                                    <span class="line-number">21</span>
+                                    <span class="line-number">22</span>
+                                    <span class="line-number">23</span>
+                                    <span class="line-number">24</span>
+                                </div>
+                                <div class="code-text"><span class="keyword">const</span> fs = <span class="function">require</span>(<span class="string">'fs'</span>);
+
+<span class="function">console.log</span>(<span class="string">'1: Server starting'</span>);
+
+fs.<span class="function">readFile</span>(<span class="string">'./file.txt'</span>, <span class="function">(err, data)</span> => {
+  <span class="function">console.log</span>(<span class="string">'6: File read'</span>);
+});
+
+<span class="function">Promise</span>.<span class="function">resolve</span>().<span class="function">then</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'2: Promise 1'</span>);
+}).<span class="function">then</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'3: Promise 2'</span>);
+});
+
+<span class="function">setImmediate</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'4: Immediate'</span>);
+});
+
+<span class="function">process.nextTick</span>(<span class="function">()</span> => {
+  <span class="function">console.log</span>(<span class="string">'5: Next tick'</span>);
+});
+
+<span class="function">console.log</span>(<span class="string">'End of sync'</span>);</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MENTAL MODEL SECTION -->
+            <div class="section">
+                <h2>🧠 The Mental Model</h2>
+
+                <div class="mental-model">
+                    <h3 style="margin-top: 0; color: var(--accent);">Three Execution Contexts</h3>
+                    
+                    <p><strong style="color: var(--accent);">1. Call Stack</strong> - Synchronous Code<br/>
+                    Your regular, synchronous JavaScript code. Executes immediately, line by line. When empty, event loop checks what's next.</p>
+
+                    <p style="margin-top: 15px;"><strong style="color: var(--accent);">2. Microtask Queue</strong> - Promises & Async Operations<br/>
+                    Promise callbacks (.then, .catch, .finally), async/await, and MutationObserver callbacks. <strong>ALL microtasks drain before ANY macrotask executes.</strong></p>
+
+                    <p style="margin-top: 15px;"><strong style="color: var(--accent);">3. Macrotask Queue</strong> - Timers, Events, I/O<br/>
+                    setTimeout, setInterval, events (click, scroll), file I/O, WebSocket callbacks. <strong>ONE macrotask executes per event loop cycle.</strong></p>
+
+                    <p style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <strong>The Loop:</strong><br/>
+                    Call Stack → (empty?) → Microtask Queue (drain ALL) → Rendering → Macrotask (execute ONE) → Repeat
+                    </p>
+                </div>
+
+                <h3>Why This Matters</h3>
+                <p>Most developers think "async = next". But JavaScript has <strong>two types of async</strong>:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Microtask async:</strong> Promises (high priority)</li>
+                    <li><strong>Macrotask async:</strong> Timers, events, I/O (lower priority)</li>
+                </ul>
+                <p style="margin-top: 15px;">A Promise will <strong>always</strong> execute before setTimeout, even if setTimeout was registered first!</p>
+            </div>
+
+            <!-- EXECUTION BREAKDOWN -->
+            <div class="section">
+                <h2>📍 Line-by-Line Execution with Queue Impact</h2>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab(event, 'browser-execution')">🌐 Browser Example</button>
+                    <button class="tab-button" onclick="switchTab(event, 'node-execution')">⚙️ Node.js Example</button>
+                </div>
+
+                <!-- BROWSER EXECUTION -->
+                <div id="browser-execution" class="tab-content active">
+                    <h3>Browser WebSocket Example - Line by Line</h3>
+                    <table class="execution-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%">Line</th>
+                                <th style="width: 15%">Code</th>
+                                <th style="width: 20%">Queue Impact</th>
+                                <th style="width: 57%">Explanation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td><code>console.log('1: App')</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Synchronous execution. Runs immediately when script loads.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td><code>new WebSocket()</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Synchronous. Creates WebSocket object. Network connection initiated but onopen callback won't fire until connection opens (macrotask queue).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4-6</strong></td>
+                                <td><code>ws.onopen = ()</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Registering callback. When WebSocket connects, this callback will be queued to macrotask queue (not now, later when network event fires).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>8-13</strong></td>
+                                <td><code>ws.onmessage = ()</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Registering callback. When server sends message, this callback will be queued to macrotask queue. Note: Promise inside this callback will queue to NEXT microtask phase.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>15-17</strong></td>
+                                <td><code>addEventListener('click')</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Registering event listener. When user clicks, callback queues to macrotask queue.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>19-24</strong></td>
+                                <td><code>Promise.resolve().then()</code></td>
+                                <td><span class="badge badge-microtask">MICROTASK QUEUE</span></td>
+                                <td>Promise chain. Both .then() callbacks queue to microtask queue (right now, not later). Will execute after sync code and before any macrotask.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>26-28</strong></td>
+                                <td><code>setTimeout(fn, 0)</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Even with 0ms delay, this is a macrotask. Callback queues to macrotask queue. Will execute after ALL microtasks drain.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>30</strong></td>
+                                <td><code>console.log('5: Setup')</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Last synchronous line. Still on call stack. All callbacks registered but none have executed.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- NODE.JS EXECUTION -->
+                <div id="node-execution" class="tab-content">
+                    <h3>Node.js File Operations Example - Line by Line</h3>
+                    <table class="execution-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%">Line</th>
+                                <th style="width: 15%">Code</th>
+                                <th style="width: 20%">Queue Impact</th>
+                                <th style="width: 57%">Explanation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td><code>require('fs')</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Synchronous module import. Loads fs module into memory.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td><code>console.log('1: Server')</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Synchronous output. Executes immediately.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5-7</strong></td>
+                                <td><code>fs.readFile()</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>File I/O operation. Callback will queue to macrotask queue when file read completes (could be 1-10ms later). Sync code doesn't wait for this.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>9-12</strong></td>
+                                <td><code>Promise.resolve().then()</code></td>
+                                <td><span class="badge badge-microtask">MICROTASK QUEUE</span></td>
+                                <td>Promise chain. Both .then() callbacks queue to microtask queue immediately. Will execute after sync code, before file I/O callback.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>14-16</strong></td>
+                                <td><code>setImmediate()</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Node.js specific. Callback queues to setImmediate phase. Executes in Node.js check phase (after I/O polling but before next timer phase).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>18-20</strong></td>
+                                <td><code>process.nextTick()</code></td>
+                                <td><span class="badge badge-macrotask">MACROTASK QUEUE</span></td>
+                                <td>Node.js specific. Highest priority in Node.js event loop. Executes right after current operation but before I/O polling.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>22</strong></td>
+                                <td><code>console.log('End')</code></td>
+                                <td><span class="badge badge-call-stack">CALL STACK</span></td>
+                                <td>Last synchronous line. Still on call stack.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- OUTPUT SECTION -->
+            <div class="section">
+                <h2>📤 Raw Output - Line by Line</h2>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab(event, 'browser-output')">🌐 Browser Output</button>
+                    <button class="tab-button" onclick="switchTab(event, 'node-output')">⚙️ Node.js Output</button>
+                </div>
+
+                <!-- BROWSER OUTPUT -->
+                <div id="browser-output" class="tab-content active">
+                    <h3>Browser WebSocket Example - Complete Output</h3>
+                    <div class="output-block">
+                        <div class="output-line">1: App initialized</div>
+                        <div class="output-line">5: Setup complete</div>
+                        <div class="output-line">2: Promise 1</div>
+                        <div class="output-line">3: Promise 2</div>
+                        <div class="output-line">4: Timeout fired</div>
+                        <div class="output-line">(WebSocket connects from network...)</div>
+                        <div class="output-line">6: WebSocket connected</div>
+                        <div class="output-line">(Server sends message...)</div>
+                        <div class="output-line">7: Message received</div>
+                        <div class="output-line">8: Message processed</div>
+                        <div class="output-line">(User clicks...)</div>
+                        <div class="output-line">9: User clicked</div>
+                    </div>
+                    
+                    <p style="margin-top: 20px;"><strong>Expected execution order without user interaction:</strong></p>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>1: App initialized (SYNC)</li>
+                        <li>5: Setup complete (SYNC)</li>
+                        <li>2: Promise 1 (MICROTASK)</li>
+                        <li>3: Promise 2 (MICROTASK)</li>
+                        <li>4: Timeout fired (MACROTASK)</li>
+                        <li>6: WebSocket connected (MACROTASK - depends on network timing)</li>
+                        <li>7 & 8: Message received/processed (MACROTASK + its inner MICROTASK)</li>
+                        <li>9: User clicked (MACROTASK - depends on user)</li>
+                    </ol>
+                </div>
+
+                <!-- NODE.JS OUTPUT -->
+                <div id="node-output" class="tab-content">
+                    <h3>Node.js File Operations Example - Complete Output</h3>
+                    <div class="output-block">
+                        <div class="output-line">1: Server starting</div>
+                        <div class="output-line">End of sync</div>
+                        <div class="output-line">5: Next tick</div>
+                        <div class="output-line">2: Promise 1</div>
+                        <div class="output-line">3: Promise 2</div>
+                        <div class="output-line">4: Immediate</div>
+                        <div class="output-line">6: File read</div>
+                    </div>
+
+                    <p style="margin-top: 20px;"><strong>Execution order explanation:</strong></p>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>1: Server starting (SYNC)</li>
+                        <li>End of sync (SYNC - last line)</li>
+                        <li>5: Next tick (process.nextTick - highest priority in Node.js)</li>
+                        <li>2: Promise 1 (MICROTASK - Promises drain after nextTick)</li>
+                        <li>3: Promise 2 (MICROTASK - same chain continues)</li>
+                        <li>4: Immediate (setImmediate - Node.js check phase)</li>
+                        <li>6: File read (MACROTASK - I/O polling phase, depends on disk speed)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- GOTCHAS SECTION -->
+            <div class="section">
+                <h2>⚠️ Non-Intuitive Areas & Gotchas</h2>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #1: setTimeout(0) is NOT "run now"</strong>
+                    <p>Many developers think setTimeout with 0ms delay will run immediately. It doesn't.</p>
+                    <p><code>setTimeout(() => console.log('A'), 0);</code><br/>
+                    <code>Promise.resolve().then(() => console.log('B'));</code></p>
+                    <p><strong>Output: B, then A</strong> (not A, then B!)</p>
+                    <p>Why? setTimeout callbacks are MACROTASKS. Promise callbacks are MICROTASKS. ALL microtasks run before ANY macrotask.</p>
+                </div>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #2: WebSocket events are NOT the same as fetch</strong>
+                    <p>WebSocket callbacks (onopen, onmessage) are MACROTASKS. But fetch() returns a Promise, so its .then() callbacks are MICROTASKS.</p>
+                    <p><code>fetch('/api').then(() => console.log('A'));</code><br/>
+                    <code>ws.onmessage = () => console.log('B');</code></p>
+                    <p><strong>Output: A, then B</strong> (fetch is faster because Promises are higher priority!)</p>
+                </div>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #3: Promises inside macrotask callbacks create new microtask phase</strong>
+                    <p>When you create a Promise inside a macrotask callback, its .then() doesn't execute immediately. It queues to the NEXT microtask phase.</p>
+                    <p><code>setTimeout(() => {</code><br/>
+                    <code>  console.log('A');</code><br/>
+                    <code>  Promise.resolve().then(() => console.log('B'));</code><br/>
+                    <code>}, 0);</code></p>
+                    <p><strong>Output: A, then B</strong> (but B is a new microtask phase, so other microtasks from NEXT cycle run before B)</p>
+                </div>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #4: Node.js process.nextTick vs browser's behavior</strong>
+                    <p>process.nextTick in Node.js is NOT the same as setTimeout. nextTick has special priority—it runs almost immediately, before I/O callbacks.</p>
+                    <p>Browser doesn't have nextTick. Different platforms, different rules!</p>
+                </div>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #5: Event handlers run as macrotasks, blocking Promises</strong>
+                    <p>If user clicks and triggers an event handler, that handler is a MACROTASK. If the user clicks during heavy Promise processing, the click will wait.</p>
+                    <p>This is why long Promise chains can cause UI jank!</p>
+                </div>
+
+                <div class="gotcha-box">
+                    <strong>🎯 Gotcha #6: console.log timing can be misleading</strong>
+                    <p>Browser DevTools and console implementations can batch logs. The order you see might not match actual execution order. Always reason about the queues, not just what you see printed.</p>
+                </div>
+            </div>
+
+            <!-- BEST PRACTICES -->
+            <div class="section">
+                <h2>✅ Best Practices</h2>
+
+                <div class="best-practice-box">
+                    <strong>1. Use async/await instead of .then() chains</strong>
+                    <p>async/await is syntactic sugar for Promises but it's clearer to read and reason about:</p>
+                    <p style="margin-top: 10px;"><code>// Bad: Chained .then()</code><br/>
+                    <code>fetch('/api').then(r => r.json()).then(data => console.log(data));</code></p>
+                    <p style="margin-top: 10px;"><code>// Better: async/await</code><br/>
+                    <code>async function getData() {</code><br/>
+                    <code>&nbsp;&nbsp;const r = await fetch('/api');</code><br/>
+                    <code>&nbsp;&nbsp;const data = await r.json();</code><br/>
+                    <code>&nbsp;&nbsp;console.log(data);</code><br/>
+                    <code>}</code></p>
+                </div>
+
+                <div class="best-practice-box">
+                    <strong>2. Break up long Promise chains into smaller operations</strong>
+                    <p>Long chains of .then() keep the microtask queue busy, blocking user interactions and rendering. Keep microtask work small:</p>
+                    <p style="margin-top: 10px;"><code>// Bad: Too much in microtask queue</code><br/>
+                    <code>Promise.all(bigArray).then(() => {</code><br/>
+                    <code>&nbsp;&nbsp;// 10000 lines of processing...</code><br/>
+                    <code>});</code></p>
+                    <p style="margin-top: 10px;"><code>// Better: Break into chunks</code><br/>
+                    <code>for (let chunk of chunks) {</code><br/>
+                    <code>&nbsp;&nbsp;await processChunk(chunk); // Short microtask</code><br/>
+                    <code>}</code></p>
+                </div>
+
+                <div class="best-practice-box">
+                    <strong>3. Use requestAnimationFrame() for animations, not setTimeout()</strong>
+                    <p>requestAnimationFrame is a macrotask that runs right before rendering. Perfect for smooth animations:</p>
+                    <p style="margin-top: 10px;"><code>// Bad: setTimeout doesn't sync with rendering</code><br/>
+                    <code>setInterval(() => update(), 16);</code></p>
+                    <p style="margin-top: 10px;"><code>// Better: Synced with browser rendering</code><br/>
+                    <code>requestAnimationFrame(update);</code></p>
+                </div>
+
+                <div class="best-practice-box">
+                    <strong>4. Be careful with event listeners and Promise processing</strong>
+                    <p>Event listeners run as macrotasks. If your Promise processing takes too long, clicks/scrolls will lag:</p>
+                    <p style="margin-top: 10px;"><code>// Bad: Long Promise processing blocks clicks</code><br/>
+                    <code>async function processAllData() {</code><br/>
+                    <code>&nbsp;&nbsp;for (let item of millionItems) {</code><br/>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;await heavyProcessing(item); // One huge chain</code><br/>
+                    <code>&nbsp;&nbsp;}</code><br/>
+                    <code>}</code></p>
+                    <p style="margin-top: 10px;"><code>// Better: Yield to let events process</code><br/>
+                    <code>async function processAllData() {</code><br/>
+                    <code>&nbsp;&nbsp;for (let i = 0; i < millionItems.length; i++) {</code><br/>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;await heavyProcessing(millionItems[i]);</code><br/>
+                    <code>&nbsp;&nbsp;&nbsp;&nbsp;if (i % 100 === 0) await new Promise(r => setTimeout(r, 0)); // Yield</code><br/>
+                    <code>&nbsp;&nbsp;}</code><br/>
+                    <code>}</code></p>
+                </div>
+
+                <div class="best-practice-box">
+                    <strong>5. Understand your platform's event loop</strong>
+                    <p>Browser and Node.js have different event loops. Write code that works on both or be explicit about platform-specific code.</p>
+                </div>
+
+                <div class="best-practice-box">
+                    <strong>6. Use Performance tools to measure</strong>
+                    <p>Don't guess. Use Chrome DevTools (Performance tab) to see what's actually blocking rendering. Look for long tasks in the macrotask queue.</p>
+                </div>
+            </div>
+
+            <!-- SUMMARY SECTION -->
+            <div class="section">
+                <h2>📋 Summary</h2>
+
+                <div class="summary-box">
+                    <h3 style="margin-top: 0;">What You Now Understand</h3>
+                    
+                    <p><strong>The Three Queues:</strong></p>
+                    <ul>
+                        <li><span class="badge badge-call-stack">CALL STACK</span> - Synchronous code. Executes immediately.</li>
+                        <li><span class="badge badge-microtask">MICROTASK</span> - Promises, async/await, MutationObserver. ALL drain before next macrotask.</li>
+                        <li><span class="badge badge-macrotask">MACROTASK</span> - setTimeout, setInterval, events, I/O. ONE per cycle.</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>The Event Loop Order:</strong></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Execute all CALL STACK code</li>
+                        <li>Drain ALL MICROTASK queue</li>
+                        <li>Render (if needed)</li>
+                        <li>Execute ONE MACROTASK</li>
+                        <li>Go back to step 1</li>
+                    </ol>
+
+                    <p style="margin-top: 15px;"><strong>Key Insights:</strong></p>
+                    <ul>
+                        <li>Promises always run before setTimeout, even if setTimeout was registered first</li>
+                        <li>WebSocket and event callbacks are macrotasks (can block rendering)</li>
+                        <li>Long microtask chains block user interactions</li>
+                        <li>Browser and Node.js have different event loop phases</li>
+                        <li>Understanding queues is essential for performance optimization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>JavaScript Event Queues - Complete Tutorial</p>
+            <p style="font-size: 0.9em; margin-top: 10px; color: var(--muted);">Master the event loop. Write faster, more responsive code.</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement.querySelector('.code-text');
+            const code = codeBlock.innerText;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.innerText;
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function switchTab(event, tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Deactivate all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

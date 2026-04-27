@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Arrow Functions Tutorial — ECMAScript 2026</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+      --code-border: #1e3a8a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+                  radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 72px; }
+    header, section {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+    header { padding: 32px; margin-bottom: 28px; }
+    section { padding: 28px; margin: 22px 0; }
+    h1, h2, h3, h4 { color: #f8fafc; line-height: 1.25; margin-top: 0; }
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 10px; letter-spacing: -0.04em; }
+    h2 { font-size: 1.85rem; margin-top: 0; }
+    h3 { font-size: 1.25rem; margin-top: 30px; color: #dbeafe; }
+    h4 { color: var(--accent); margin-bottom: 8px; }
+    p, li { color: var(--text); }
+    .subtitle { color: var(--muted); font-size: 1.05rem; max-width: 860px; margin: 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.75); color: #dbeafe; padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; }
+    .toc { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; padding: 0; list-style: none; }
+    .toc li { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.65); border-radius: 14px; }
+    .toc a { display: block; padding: 12px 14px; color: var(--accent); text-decoration: none; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(125, 211, 252, 0.12); color: #dbeafe; padding: 0.15rem 0.35rem; border-radius: 6px; font-size: 0.95em; }
+    pre { margin: 14px 0 10px; padding: 18px; overflow-x: auto; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 16px; }
+    pre code { background: transparent; padding: 0; color: #e0f2fe; font-size: 0.92rem; }
+    .comment { color: #94a3b8; } .keyword { color: #93c5fd; } .string { color: #86efac; } .number { color: #fcd34d; }
+    table { width: 100%; border-collapse: collapse; margin: 18px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #1e293b; color: #eff6ff; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    .callout { border: 1px solid var(--border); border-left: 5px solid var(--accent); background: rgba(30, 41, 59, 0.8); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+    .callout.warn { border-left-color: var(--warn); } .callout.bad { border-left-color: var(--bad); } .callout.good { border-left-color: var(--good); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 18px; background: rgba(15, 23, 42, 0.72); padding: 18px; }
+    .explain { color: var(--muted); margin-top: 8px; }
+    .diagram { margin: 22px 0; padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); overflow-x: auto; }
+    .flow { display: flex; align-items: center; gap: 12px; min-width: 760px; }
+    .node { min-width: 150px; padding: 14px 12px; border: 1px solid #475569; border-radius: 16px; text-align: center; background: #0f172a; box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+    .node.accent { border-color: var(--accent); background: rgba(14, 116, 144, 0.2); }
+    .node.good { border-color: var(--good); background: rgba(22, 101, 52, 0.2); }
+    .node.bad { border-color: var(--bad); background: rgba(127, 29, 29, 0.18); }
+    .arrow { color: var(--accent); font-size: 1.4rem; white-space: nowrap; }
+    .footer { text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.95rem; }
+    @media (max-width: 760px) { header, section { padding: 20px; } .container { padding: 22px 14px 44px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>JavaScript Arrow Functions</h1>
+      <p class="subtitle">A complete tutorial based on ECMAScript 2026 draft semantics. It covers syntax, lexical behavior, common traps, and when arrow functions are the wrong tool.</p>
+      <div class="pill-row">
+        <span class="pill">ECMAScript 2026 draft aligned</span>
+        <span class="pill">Expanded explanations</span>
+        <span class="pill">Code examples</span>
+        <span class="pill">Diagrams</span>
+      </div>
+      <ul class="toc">
+        <li><a href="#summary">1. Summary</a></li>
+        <li><a href="#details">2. Details</a></li>
+        <li><a href="#non-intuitive">3. Non-intuitive Details</a></li>
+        <li><a href="#best-practices">4. Best Practices / When Not to Use</a></li>
+        <li><a href="#conclusion">5. Conclusion</a></li>
+      </ul>
+    </header>
+
+    <section id="summary">
+      <h2>1. Summary</h2>
+      <p>An arrow function is a compact function expression written with <code>=&gt;</code>. It is not merely shorter syntax for <code>function</code>; it has different binding behavior.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Traditional function</h3>
+          <pre><code><span class="keyword">const</span> double = <span class="keyword">function</span> (x) {
+  <span class="keyword">return</span> x * <span class="number">2</span>;
+};</code></pre>
+          <p class="explain">This creates a normal function with its own dynamic <code>this</code>, own <code>arguments</code>, and potential constructor behavior if suitable.</p>
+        </div>
+        <div class="card">
+          <h3>Arrow function</h3>
+          <pre><code><span class="keyword">const</span> double = x =&gt; x * <span class="number">2</span>;</code></pre>
+          <p class="explain">This creates an arrow function with lexical <code>this</code> and an implicit return because the body is a single expression.</p>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Capability</th><th>Arrow Function</th></tr></thead>
+        <tbody>
+          <tr><td>Concise callback syntax</td><td>Yes</td></tr>
+          <tr><td>Own <code>this</code></td><td>No. <code>this</code> is lexical.</td></tr>
+          <tr><td>Own <code>arguments</code></td><td>No. Use rest parameters.</td></tr>
+          <tr><td>Constructor with <code>new</code></td><td>No.</td></tr>
+          <tr><td>Generator syntax</td><td>No standard generator arrow function syntax.</td></tr>
+        </tbody>
+      </table>
+      <div class="diagram">
+        <h3>Visual: Arrow Function Binding Model</h3>
+        <div class="flow">
+          <div class="node">Outer lexical scope</div><div class="arrow">provides</div><div class="node accent"><code>this</code>, <code>arguments</code>, <code>super</code>, <code>new.target</code></div><div class="arrow">to</div><div class="node good">Arrow function body</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="details">
+      <h2>2. Details</h2>
+
+      <h3>2.1 Syntax forms</h3>
+      <pre><code><span class="keyword">const</span> oneParam = x =&gt; x + <span class="number">1</span>;
+<span class="keyword">const</span> manyParams = (a, b) =&gt; a + b;
+<span class="keyword">const</span> noParams = () =&gt; Date.now();
+<span class="keyword">const</span> blockBody = (a, b) =&gt; {
+  <span class="keyword">return</span> a * b;
+};</code></pre>
+      <p class="explain">Parentheses are optional only for a single simple parameter. They are required for zero parameters, multiple parameters, defaults, rest parameters, and destructuring.</p>
+
+      <h3>2.2 Expression body vs block body</h3>
+      <pre><code><span class="keyword">const</span> addExpression = (a, b) =&gt; a + b;
+
+<span class="keyword">const</span> addBlock = (a, b) =&gt; {
+  <span class="keyword">return</span> a + b;
+};</code></pre>
+      <p class="explain">Expression bodies return automatically. Block bodies contain statements, so you must write <code>return</code> explicitly.</p>
+
+      <h3>2.3 Returning object literals</h3>
+      <pre><code><span class="keyword">const</span> makeUser = name =&gt; ({ name, active: <span class="keyword">true</span> });
+
+<span class="keyword">const</span> broken = name =&gt; { name: name };
+<span class="comment">// returns undefined</span></code></pre>
+      <p class="explain">The parentheses force the braces to be parsed as an object expression. Without parentheses, JavaScript treats the braces as a function body block.</p>
+      <div class="diagram">
+        <h3>Visual: Object Return Parsing</h3>
+        <div class="flow">
+          <div class="node bad"><code>x =&gt; { value: x }</code><br>block body</div><div class="arrow">vs</div><div class="node good"><code>x =&gt; ({ value: x })</code><br>object expression</div>
+        </div>
+      </div>
+
+      <h3>2.4 Lexical <code>this</code></h3>
+      <pre><code><span class="keyword">class</span> Counter {
+  constructor() {
+    <span class="keyword">this</span>.count = <span class="number">0</span>;
+  }
+
+  start() {
+    setInterval(() =&gt; {
+      <span class="keyword">this</span>.count++;
+      console.log(<span class="keyword">this</span>.count);
+    }, <span class="number">1000</span>);
+  }
+}</code></pre>
+      <p class="explain">The arrow callback does not receive a fresh <code>this</code> from <code>setInterval</code>. It uses the <code>this</code> from <code>start()</code>, which is the <code>Counter</code> instance.</p>
+      <div class="diagram">
+        <h3>Visual: Lexical <code>this</code></h3>
+        <div class="flow">
+          <div class="node">Method call<br><code>counter.start()</code></div><div class="arrow">sets</div><div class="node accent"><code>this = counter</code></div><div class="arrow">captured by</div><div class="node good">arrow callback</div>
+        </div>
+      </div>
+
+      <h3>2.5 Rest parameters replace <code>arguments</code></h3>
+      <pre><code><span class="keyword">const</span> sum = (...numbers) =&gt; {
+  <span class="keyword">return</span> numbers.reduce((total, n) =&gt; total + n, <span class="number">0</span>);
+};
+
+sum(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>); <span class="comment">// 6</span></code></pre>
+      <p class="explain">Arrow functions do not create their own <code>arguments</code>. Rest parameters are clearer, array-like by design, and scoped directly to the arrow function.</p>
+
+      <h3>2.6 Higher-order functions</h3>
+      <pre><code><span class="keyword">const</span> users = [
+  { name: <span class="string">"Ada"</span>, active: <span class="keyword">true</span> },
+  { name: <span class="string">"Linus"</span>, active: <span class="keyword">false</span> },
+  { name: <span class="string">"Grace"</span>, active: <span class="keyword">true</span> }
+];
+
+<span class="keyword">const</span> activeNames = users
+  .filter(user =&gt; user.active)
+  .map(user =&gt; user.name);</code></pre>
+      <p class="explain">Arrows work well here because each callback is short and does not need dynamic <code>this</code>.</p>
+
+      <h3>2.7 Async arrow functions</h3>
+      <pre><code><span class="keyword">const</span> fetchUser = <span class="keyword">async</span> id =&gt; {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">`/api/users/${id}`</span>);
+  <span class="keyword">return</span> response.json();
+};</code></pre>
+      <p class="explain"><code>async</code> arrows return promises just like async regular functions. The arrow-specific lexical binding rules still apply.</p>
+
+      <h3>2.8 Defaults, destructuring, and rest</h3>
+      <pre><code><span class="keyword">const</span> greet = (name = <span class="string">"friend"</span>) =&gt; <span class="string">`Hello, ${name}`</span>;
+<span class="keyword">const</span> getName = ({ name }) =&gt; name;
+<span class="keyword">const</span> collect = (first, ...rest) =&gt; ({ first, rest });</code></pre>
+      <p class="explain">These parameter forms require parentheses. They are useful, but long parameter lists can make arrows harder to read.</p>
+    </section>
+
+    <section id="non-intuitive">
+      <h2>3. Non-intuitive Details</h2>
+
+      <h3>3.1 Object methods: arrows usually do not mean what people expect</h3>
+      <pre><code><span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  sayName: () =&gt; console.log(<span class="keyword">this</span>.name)
+};
+
+user.sayName();
+<span class="comment">// usually undefined</span></code></pre>
+      <p class="explain">The arrow does not get <code>this</code> from <code>user.sayName()</code>. It gets <code>this</code> from where the object literal was created.</p>
+      <pre><code><span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  sayName() {
+    console.log(<span class="keyword">this</span>.name);
+  }
+};
+
+user.sayName(); <span class="comment">// "Ada"</span></code></pre>
+      <p class="explain">Method syntax is the right choice when you need the receiver before the dot to determine <code>this</code>.</p>
+
+      <h3>3.2 <code>call</code>, <code>apply</code>, and <code>bind</code> do not rebind arrow <code>this</code></h3>
+      <pre><code><span class="keyword">const</span> obj = { value: <span class="number">42</span> };
+<span class="keyword">const</span> read = () =&gt; <span class="keyword">this</span>.value;
+
+read.call(obj);
+<span class="comment">// does not force this to obj</span></code></pre>
+      <p class="explain">These methods can still pass arguments, but they cannot change the arrow function's captured lexical <code>this</code>.</p>
+
+      <h3>3.3 Arrows cannot be constructors</h3>
+      <pre><code><span class="keyword">const</span> Person = name =&gt; {
+  <span class="keyword">this</span>.name = name;
+};
+
+<span class="keyword">new</span> Person(<span class="string">"Ada"</span>);
+<span class="comment">// TypeError: Person is not a constructor</span></code></pre>
+      <p class="explain">Arrow functions do not have the internal constructor behavior needed by <code>new</code>.</p>
+
+      <h3>3.4 Arrows do not have a useful <code>prototype</code></h3>
+      <pre><code><span class="keyword">const</span> arrow = () =&gt; {};
+<span class="keyword">function</span> regular() {}
+
+console.log(arrow.prototype);   <span class="comment">// undefined</span>
+console.log(regular.prototype); <span class="comment">// object</span></code></pre>
+      <p class="explain">Because arrows are not constructors, they do not need a constructor prototype object.</p>
+
+      <h3>3.5 Newline before <code>=&gt;</code> is invalid</h3>
+      <pre><code><span class="comment">// SyntaxError</span>
+<span class="keyword">const</span> bad = (x)
+  =&gt; x * <span class="number">2</span>;
+
+<span class="comment">// Valid</span>
+<span class="keyword">const</span> good = (x) =&gt;
+  x * <span class="number">2</span>;</code></pre>
+      <p class="explain">The grammar does not allow a line terminator between the parameter list and the arrow token.</p>
+
+      <h3>3.6 Block body accidentally returns <code>undefined</code></h3>
+      <pre><code><span class="keyword">const</span> addBad = (a, b) =&gt; {
+  a + b;
+};
+
+addBad(<span class="number">2</span>, <span class="number">3</span>); <span class="comment">// undefined</span></code></pre>
+      <p class="explain">Once you use braces, you are writing a statement body. Expressions inside the block are not returned automatically.</p>
+
+      <h3>3.7 Arrows are not generator functions</h3>
+      <pre><code><span class="comment">// Use regular generator syntax</span>
+<span class="keyword">function</span>* ids() {
+  <span class="keyword">yield</span> <span class="number">1</span>;
+  <span class="keyword">yield</span> <span class="number">2</span>;
+}</code></pre>
+      <p class="explain">There is no standard <code>* =&gt;</code> or generator-arrow syntax in ECMAScript.</p>
+
+      <h3>3.8 Class field arrows create a function per instance</h3>
+      <pre><code><span class="keyword">class</span> View {
+  label = <span class="string">"Save"</span>;
+
+  handleClick = () =&gt; {
+    console.log(<span class="keyword">this</span>.label);
+  };
+}</code></pre>
+      <p class="explain">This is convenient for event handlers because <code>this</code> is preserved, but every instance gets its own <code>handleClick</code> function.</p>
+    </section>
+
+    <section id="best-practices">
+      <h2>4. Best Practices / When Not to Use</h2>
+
+      <h3>Use arrow functions for short callbacks</h3>
+      <pre><code><span class="keyword">const</span> prices = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>];
+<span class="keyword">const</span> withTax = prices.map(price =&gt; price * <span class="number">1.07</span>);</code></pre>
+      <p class="explain">This is a strong use case: the function is short, local, and does not need a dynamic receiver.</p>
+
+      <h3>Use arrows to preserve instance <code>this</code> in callbacks</h3>
+      <pre><code><span class="keyword">class</span> Timer {
+  seconds = <span class="number">0</span>;
+
+  start() {
+    setInterval(() =&gt; {
+      <span class="keyword">this</span>.seconds++;
+    }, <span class="number">1000</span>);
+  }
+}</code></pre>
+      <p class="explain">The callback needs access to the surrounding instance, so lexical <code>this</code> is useful.</p>
+
+      <h3>Do not use arrows for object methods needing receiver <code>this</code></h3>
+      <pre><code><span class="keyword">const</span> account = {
+  balance: <span class="number">100</span>,
+  withdraw(amount) {
+    <span class="keyword">this</span>.balance -= amount;
+  }
+};</code></pre>
+      <p class="explain">Use method syntax here because <code>this</code> should be determined by the call site: <code>account.withdraw(25)</code>.</p>
+
+      <h3>Do not use arrows as constructors or prototype methods</h3>
+      <pre><code><span class="keyword">function</span> User(name) {
+  <span class="keyword">this</span>.name = name;
+}
+
+User.prototype.sayName = <span class="keyword">function</span>() {
+  console.log(<span class="keyword">this</span>.name);
+};</code></pre>
+      <p class="explain">Constructor/prototype patterns require normal functions because they rely on <code>new</code>, prototypes, and dynamic <code>this</code>.</p>
+
+      <h3>Prefer named functions for complex business logic</h3>
+      <pre><code><span class="keyword">function</span> calculateInvoiceTotal(invoice) {
+  <span class="comment">// multiple validation, discount, tax, and rounding steps</span>
+}</code></pre>
+      <p class="explain">A named function declaration can be easier to scan, test, reuse, and identify in stack traces than a long inline arrow.</p>
+
+      <div class="diagram">
+        <h3>Visual: Decision Guide</h3>
+        <div class="flow">
+          <div class="node">Need dynamic <code>this</code>?</div><div class="arrow">yes →</div><div class="node good">method / regular function</div><div class="arrow">no →</div><div class="node accent">arrow likely OK</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>5. Conclusion</h2>
+      <p>Arrow functions are best understood as concise function expressions with lexical binding behavior. Their greatest strength is not just shorter syntax; it is predictable access to the surrounding <code>this</code> in callback-heavy code.</p>
+      <div class="callout good"><strong>Final rule:</strong> Use arrows for short, local callbacks and lexical <code>this</code>. Use regular functions or method syntax when the call-site receiver, constructor behavior, generators, or prototype methods matter.</div>
+    </section>
+
+    <p class="footer">Standalone HTML tutorial generated for JavaScript arrow functions.</p>
+  </div>
+</body>
+</html>

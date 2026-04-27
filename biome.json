@@ -1,0 +1,28 @@
+{
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "files": {
+    "includes": ["src", "questions", "!!**/node_modules", "!!**/dist"]
+  }
+}
