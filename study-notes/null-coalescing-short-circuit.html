@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Null Coalescing & Short-Circuiting (ECMAScript 2025)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --border: #334155;
+      --code-bg: #0b1220;
+      --code-text: #dbeafe;
+      --table-head: #1e293b;
+      --ok: #86efac;
+      --warn: #fcd34d;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    header {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+      color: #f8fafc;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      padding-top: 8px;
+      font-size: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 1.15rem;
+      color: #dbeafe;
+    }
+
+    p, li {
+      color: var(--text);
+    }
+
+    .lede {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .section {
+      background: rgba(17, 24, 39, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(96, 165, 250, 0.12);
+      color: #dbeafe;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 14px 0 18px;
+      padding: 16px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 1px solid #1e3a8a;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 20px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--table-head);
+      color: #eff6ff;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,.02);
+    }
+
+    .callout {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.75);
+    }
+
+    .callout strong {
+      color: #f8fafc;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+
+    .toc {
+      margin-top: 18px;
+      padding-left: 18px;
+      columns: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover { text-decoration: underline; }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .toc { columns: 1; }
+      .container { padding: 20px 14px 40px; }
+      .section { padding: 18px; }
+      h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Null Coalescing & Short-Circuiting (ECMAScript 2025)</h1>
+      <p class="lede">
+        Comprehensive guide to logical operators, null coalescing, short-circuit evaluation,
+        and optional chaining—including mental models, edge cases, and practical patterns.
+      </p>
+      <ol class="toc">
+        <li><a href="#section-1">Mental Model</a></li>
+        <li><a href="#section-2">Logical Operators</a></li>
+        <li><a href="#section-3">Short-Circuit Evaluation</a></li>
+        <li><a href="#section-4">Null Coalescing (??)</a></li>
+        <li><a href="#section-5">Optional Chaining (?.)</a></li>
+        <li><a href="#section-6">Operator Precedence</a></li>
+        <li><a href="#section-7">Common Pitfalls</a></li>
+        <li><a href="#section-8">Real-World Patterns</a></li>
+        <li><a href="#section-9">Best Practices</a></li>
+        <li><a href="#section-10">Interview Questions</a></li>
+      </ol>
+    </header>
+
+    <section class="section" id="section-1">
+      <h2>1. Mental Model</h2>
+      <p>
+        These operators combine truthiness evaluation with control flow in a single expression:
+      </p>
+      <ul>
+        <li><strong>Logical operators</strong> (<code>&&</code>, <code>||</code>) return the value of an operand, not a boolean</li>
+        <li><strong>Short-circuit evaluation</strong> stops evaluating when the result is determined</li>
+        <li><strong>Null coalescing</strong> (<code>??</code>) specifically targets <code>null</code> and <code>undefined</code></li>
+        <li><strong>Optional chaining</strong> (<code>?.</code>) safely accesses nested properties</li>
+      </ul>
+      <div class="callout">
+        <strong>Key insight:</strong> These operators are expressions, not just control flow.
+        They return actual values that can be assigned or used further.
+      </div>
+    </section>
+
+    <section class="section" id="section-2">
+      <h2>2. Logical Operators</h2>
+
+      <h3>Logical AND (<code>&&</code>)</h3>
+      <p>Returns the first falsy operand, or the last operand if all are truthy.</p>
+      <pre><code>true && "hello";     // "hello"
+false && "hello";    // false
+5 && 10;             // 10
+0 && 10;             // 0
+"" && "hello";       // ""
+null && 5;           // null</code></pre>
+
+      <h3>Logical OR (<code>||</code>)</h3>
+      <p>Returns the first truthy operand, or the last operand if all are falsy.</p>
+      <pre><code>false || "hello";    // "hello"
+"" || "default";     // "default"
+0 || 42;             // 42
+5 || 10;             // 5
+null || undefined;   // undefined
+false || 0 || null;  // null</code></pre>
+
+      <h3>Comparison Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Expression</th>
+            <th>Operator</th>
+            <th>Result</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>5 && 10</code></td><td>AND</td><td>10</td><td>number</td></tr>
+          <tr><td><code>5 || 10</code></td><td>OR</td><td>5</td><td>number</td></tr>
+          <tr><td><code>false && 10</code></td><td>AND</td><td>false</td><td>boolean</td></tr>
+          <tr><td><code>false || 10</code></td><td>OR</td><td>10</td><td>number</td></tr>
+          <tr><td><code>"" && 10</code></td><td>AND</td><td>""</td><td>string</td></tr>
+          <tr><td><code>"hello" || 10</code></td><td>OR</td><td>"hello"</td><td>string</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="section-3">
+      <h2>3. Short-Circuit Evaluation</h2>
+
+      <h3>The && Short-Circuit</h3>
+      <p>
+        The right operand is <strong>only evaluated if the left operand is truthy</strong>.
+      </p>
+      <pre><code>const obj = null;
+obj && obj.name;  // null (obj.name is never evaluated)
+
+const user = { name: "Alice" };
+user && user.name;  // "Alice"</code></pre>
+
+      <h3>The || Short-Circuit</h3>
+      <p>
+        The right operand is <strong>only evaluated if the left operand is falsy</strong>.
+      </p>
+      <pre><code>const config = null;
+config || { color: "blue" };  // { color: "blue" }
+
+const theme = { color: "red" };
+theme || { color: "blue" };   // { color: "red" }</code></pre>
+
+      <h3>Side Effects and Evaluation</h3>
+      <p>
+        Short-circuit evaluation prevents unnecessary function calls and side effects:
+      </p>
+      <pre><code>function expensiveCall() {
+  console.log("Running!");
+  return 42;
+}
+
+false && expensiveCall(); // "Running!" never logs
+
+true || expensiveCall();  // "Running!" never logs</code></pre>
+
+      <div class="callout">
+        <strong>Performance implication:</strong> Right operands are not evaluated if
+        the short-circuit condition is met. This can be used intentionally to avoid
+        expensive operations.
+      </div>
+    </section>
+
+    <section class="section" id="section-4">
+      <h2>4. Null Coalescing Operator (??)</h2>
+
+      <h3>What It Does</h3>
+      <p>
+        Returns the right operand only if the left is <code>null</code> or <code>undefined</code>.
+        All other falsy values (0, "", false, NaN) are treated as valid.
+      </p>
+      <pre><code>null ?? "default";       // "default"
+undefined ?? "default";  // "default"
+0 ?? "default";          // 0
+"" ?? "default";         // ""
+false ?? "default";      // false
+NaN ?? "default";        // NaN</code></pre>
+
+      <h3>Difference from ||</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Expression</th>
+            <th>|| Result</th>
+            <th>?? Result</th>
+            <th>Difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>0 || 5</code></td><td>5</td><td><code>0 ?? 5</code> = 0</td><td>✓ Differs</td></tr>
+          <tr><td><code>"" || "x"</code></td><td>"x"</td><td><code>"" ?? "x"</code> = ""</td><td>✓ Differs</td></tr>
+          <tr><td><code>false || true</code></td><td>true</td><td><code>false ?? true</code> = false</td><td>✓ Differs</td></tr>
+          <tr><td><code>null || "x"</code></td><td>"x"</td><td><code>null ?? "x"</code> = "x"</td><td>Same</td></tr>
+          <tr><td><code>undefined || "x"</code></td><td>"x"</td><td><code>undefined ?? "x"</code> = "x"</td><td>Same</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Real-World Example</h3>
+      <pre><code>// Configuration with valid falsy values
+const config = {
+  timeout: 0,       // 0 is valid!
+  retries: false,   // false is valid!
+  name: null        // null means use default
+};
+
+const timeout = config.timeout ?? 30;    // 0 (valid)
+const retries = config.retries ?? 3;     // false (valid)
+const name = config.name ?? "Guest";     // "Guest" (null, use default)</code></pre>
+
+      <div class="callout">
+        <strong class="ok">Use case:</strong> When 0, "", or false are valid values, prefer <code>??</code> over <code>||</code>.
+      </div>
+    </section>
+
+    <section class="section" id="section-5">
+      <h2>5. Optional Chaining (?.)</h2>
+
+      <h3>Property Access</h3>
+      <p>
+        Returns <code>undefined</code> if the left side is <code>null</code> or <code>undefined</code>,
+        otherwise accesses the property.
+      </p>
+      <pre><code>const user = null;
+user?.name;  // undefined
+
+const person = { name: "Alice" };
+person?.name;  // "Alice"</code></pre>
+
+      <h3>Method Calls</h3>
+      <pre><code>const obj = { greet: () => "Hello" };
+obj?.greet();  // "Hello"
+
+const empty = null;
+empty?.greet();  // undefined (method not called)</code></pre>
+
+      <h3>Array/Computed Access</h3>
+      <pre><code>const arr = [1, 2, 3];
+arr?.[0];  // 1
+
+const empty = null;
+empty?.[0];  // undefined</code></pre>
+
+      <h3>Chaining Multiple Levels</h3>
+      <pre><code>const response = {
+  user: {
+    profile: {
+      name: "Alice"
+    }
+  }
+};
+
+response?.user?.profile?.name;  // "Alice"
+
+const partial = { user: null };
+partial?.user?.profile?.name;   // undefined (stops at null)</code></pre>
+
+      <div class="callout">
+        <strong>Short-circuit behavior:</strong> Once <code>?.</code> encounters
+        <code>null</code> or <code>undefined</code>, the entire chain returns <code>undefined</code>
+        and further access is skipped.
+      </div>
+    </section>
+
+    <section class="section" id="section-6">
+      <h2>6. Operator Precedence & Combination</h2>
+
+      <h3>Precedence Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Operators</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>High</td><td>Optional chaining <code>?.</code></td><td><code>obj?.prop</code></td></tr>
+          <tr><td></td><td>Logical NOT <code>!</code></td><td><code>!x</code></td></tr>
+          <tr><td></td><td>Comparison <code>==, ===, &lt;, &gt;</code></td><td><code>a === b</code></td></tr>
+          <tr><td>Medium</td><td>Logical AND <code>&&</code></td><td><code>a && b</code></td></tr>
+          <tr><td></td><td>Logical OR <code>||</code></td><td><code>a || b</code></td></tr>
+          <tr><td>Low</td><td>Null coalescing <code>??</code></td><td><code>a ?? b</code></td></tr>
+          <tr><td>Lower</td><td>Assignment <code>=, +=</code></td><td><code>x = y</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Combining with Parentheses</h3>
+      <pre><code>// Mixing && and ||
+const value = false && true || "default";
+// Evaluates: (false && true) || "default" = "default"
+
+// Null coalescing with ||
+const x = null || 5 ?? 10;
+// Evaluates: (null || 5) ?? 10 = 5 ?? 10 = 5
+
+// Better: use parentheses for clarity
+const config = (null ?? "default") || "fallback";
+// Evaluates: "default" || "fallback" = "default"</code></pre>
+
+      <div class="callout">
+        <span class="warn">Caution:</span> Mixing <code>&&</code>/<code>||</code> with <code>??</code>
+        without parentheses raises a SyntaxError. Use explicit grouping.
+      </div>
+    </section>
+
+    <section class="section" id="section-7">
+      <h2>7. Common Pitfalls</h2>
+
+      <h3>Mistake 1: Using || When You Mean ??</h3>
+      <pre><code>// Wrong: will use default for valid 0
+const count = userInput.count || 10;
+
+// Right: 0 is a valid count
+const count = userInput.count ?? 10;</code></pre>
+
+      <h3>Mistake 2: Not Grouping Mixed Operators</h3>
+      <pre><code>// SyntaxError: cannot mix && and ?? without parentheses
+const x = a && b ?? c;
+
+// Correct
+const x = (a && b) ?? c;</code></pre>
+
+      <h3>Mistake 3: Forgetting Short-Circuit Side Effects</h3>
+      <pre><code>let result;
+false && (result = "assigned");  // result stays undefined!
+
+const value = result || "default";  // "default"</code></pre>
+
+      <h3>Mistake 4: Assuming ?. Returns Boolean</h3>
+      <pre><code>const obj = null;
+if (obj?.name) { }  // Falsy check works, but returns undefined (not false)
+
+// More explicit:
+if (obj?.name !== undefined) { }</code></pre>
+
+      <h3>Mistake 5: Optional Chaining on Non-Nullish Values</h3>
+      <pre><code>const str = "hello";
+str?.length;  // 5 (works fine)
+
+const num = 0;
+num?.toFixed(2);  // Throws: 0 is valid, but doesn't have toFixed
+// Optional chaining doesn't prevent errors for invalid method calls</code></pre>
+
+      <div class="callout">
+        <strong>Insight:</strong> <code>?.</code> checks for null/undefined,
+        not whether the property exists or is callable.
+      </div>
+    </section>
+
+    <section class="section" id="section-8">
+      <h2>8. Real-World Patterns</h2>
+
+      <h3>API Response Handling</h3>
+      <pre><code>const response = await fetch("/api/user");
+const user = await response.json();
+
+// Safe navigation through nested structure
+const username = user?.profile?.name ?? "Anonymous";
+const avatar = user?.profile?.avatar ?? "/default.png";</code></pre>
+
+      <h3>Default Values with Valid Falsy</h3>
+      <pre><code>// Form submission with 0 and empty string as valid
+const formData = {
+  count: input.count ?? 0,       // User can submit 0
+  tags: input.tags ?? [],        // User can submit []
+  approved: input.approved ?? false  // User can submit false
+};</code></pre>
+
+      <h3>Conditional Execution</h3>
+      <pre><code>// Run callback only if it exists
+user?.onLogout?.();
+
+// Chain operations safely
+const config = loadConfig()
+  ?.validate()
+  ?.toJSON();
+
+// Defaults at each step
+const fontSize = config?.fontSize ?? 14;</code></pre>
+
+      <h3>Combining for Robustness</h3>
+      <pre><code>const getTimeout = (config) => {
+  return config?.timeout ?? globalConfig.timeout ?? 30000;
+};
+
+const getColorMode = (prefs) => {
+  return prefs?.color && (prefs.color === "dark" ? "dark" : "light")
+    ?? systemDefault.color;
+};</code></pre>
+    </section>
+
+    <section class="section" id="section-9">
+      <h2>9. Best Practices</h2>
+
+      <h3>Do</h3>
+      <ul>
+        <li>Use <code>??</code> for null/undefined defaults</li>
+        <li>Use <code>?.</code> to safely navigate nullable structures</li>
+        <li>Use <code>&&</code> for guarded execution (only if truthy)</li>
+        <li>Use parentheses when mixing <code>&&</code>/<code>||</code> with <code>??</code></li>
+        <li>Prefer <code>??</code> for configuration with falsy valid values (0, "")</li>
+      </ul>
+
+      <h3>Don't</h3>
+      <ul>
+        <li>Use <code>||</code> for null defaults when 0 or "" are valid</li>
+        <li>Chain <code>?.</code> excessively (consider destructuring instead)</li>
+        <li>Assume <code>?.</code> validates method callability</li>
+        <li>Use <code>&&</code> for side effects in complex expressions</li>
+        <li>Mix <code>&&</code>/<code>||</code> with <code>??</code> without parentheses</li>
+      </ul>
+
+      <h3>Code Examples</h3>
+      <pre><code>// Good: explicit intent
+const timeout = config?.timeout ?? 5000;
+const name = user?.name ?? "Guest";
+
+// Bad: implicit fallback
+const timeout = config?.timeout || 5000;
+const name = user?.name || "Guest";</code></pre>
+
+      <div class="callout">
+        <strong class="ok">Rule of thumb:</strong> Read the operator as a sentence.
+        <code>??</code> = "or use this if null/undefined"
+        <code>||</code> = "or use this if falsy"
+        <code>&&</code> = "and then if truthy"
+      </div>
+    </section>
+
+    <section class="section" id="section-10">
+      <h2>10. Interview Questions</h2>
+
+      <h3>Q: What does <code>null && undefined</code> return?</h3>
+      <pre><code>null && undefined
+// Returns: null (first falsy value)</code></pre>
+
+      <h3>Q: What's the difference between these?</h3>
+      <pre><code>false || 0;     // 0
+false ?? 0;     // false
+false && 0;     // false</code></pre>
+
+      <h3>Q: When does <code>obj?.method()</code> NOT call the method?</h3>
+      <pre><code>const obj = null;
+obj?.method();  // undefined, method not called
+
+const obj = { method: null };
+obj?.method();  // null (method is null, not called)</code></pre>
+
+      <h3>Q: What's the result?</h3>
+      <pre><code>const a = 0;
+const b = null;
+const result = (a ?? 10) || (b ?? 20);
+// a ?? 10 evaluates to 0
+// 0 || (b ?? 20) evaluates to 0 || 20 = 20
+// Result: 20</code></pre>
+
+      <h3>Q: Why does this throw an error?</h3>
+      <pre><code>const x = a && b ?? c;
+// SyntaxError: missing parentheses
+// Fix: const x = (a && b) ?? c;</code></pre>
+
+      <h3>Q: What's printed?</h3>
+      <pre><code>let called = false;
+const fn = () => (called = true, "value");
+
+const result = false && fn();
+console.log(called);  // false (fn never called)</code></pre>
+    </section>
+
+    <p class="footer">Generated as a complete standalone HTML reference for ES2025 null coalescing and short-circuit operators.</p>
+  </div>
+</body>
+</html>

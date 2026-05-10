@@ -8,119 +8,105 @@ Agora is an interactive JavaScript learning platform focused on **core ECMAScrip
 
 ## Architecture
 
-Agora is a full-stack monorepo with the following structure:
+Agora is organized with the following structure:
 
 ```
 agora/
-├── frontend/          # React + TypeScript + Vite SPA
-├── backend/           # Node.js/Express REST API
-├── questions/         # Question repository (JSON/YAML files)
-├── shared/            # Shared types and utilities
-└── docs/              # Documentation
+├── study-notes/       # Interactive HTML study guides and tutorials
+├── questions/         # Question/challenge repository (JSON/YAML files)
+├── src/               # JavaScript source code
+├── scripts/           # Utility scripts
+├── Philosophy/        # Design philosophy and learning principles
+├── package.json       # Project dependencies
+└── pnpm-lock.yaml     # Lockfile for pnpm package manager
 ```
 
-### Frontend (`frontend/`)
-- **Tech**: React 19, JavaScript, Vite
-- **Editor**: Monaco Editor for code input
-- **Styling**: Tailwind CSS for UI components
-- **State**: Zustand or React Context for user state, session data, and score tracking
-- **Key features**: Interactive question rendering, real-time code editing, progress tracking
+### Study Notes (`study-notes/`)
 
-### Backend (`backend/`)
-- **Tech**: Node.js (latest LTS with ES2025 support), Express
-- **API**: REST endpoints for:
-  - Question retrieval (with adaptive difficulty logic)
-  - Code submission and validation
-  - User progress tracking
-  - Score calculations and analytics
-- **Code Execution**: Execute user-submitted JavaScript in a sandboxed environment (Node.js worker threads with restricted globals)
-  - Supports ES2025 syntax and features
-  - Isolates user code from file system and network access
-  - Returns execution results, errors, and console output
-- **Database**: PostgreSQL or MongoDB for user profiles, question attempts, and progress history
+- **Purpose**: Interactive HTML-based tutorials and learning guides
+- **Coverage**: Core JavaScript and ECMAScript 2025 fundamentals
+- **Format**: Self-contained HTML files covering:
+  - Event loops and async patterns
+  - Type coercion and type system
+  - Functions and arrow functions
+  - Call by sharing (pass by reference semantics)
+  - Symbol coercion and advanced topics
+- **Navigation**: `index.html` serves as a knowledge hub with topic-based organization and full-text search
 
 ### Questions (`questions/`)
-- Repository of challenges organized by difficulty and topic
-- **Focus**: Core JavaScript language fundamentals (ES2025)
-- Format: JSON/YAML files with:
+
+- Repository of coding challenges and theory questions
+- **Format**: JSON/YAML files with:
   - Question text (theory or coding challenge prompt)
-  - Expected solution or test cases (executable JavaScript)
   - Difficulty level (beginner, intermediate, advanced)
-  - Topic tags (closures, async/await, prototypes, destructuring, optional chaining, nullish coalescing, etc.)
+  - Topic tags (closures, async/await, prototypes, destructuring, etc.)
   - ES2025 feature tags (if applicable)
 - **Topics covered**: Variables, scope, hoisting, functions, closures, prototypes, async/await, promises, generators, destructuring, spread operator, template literals, modules, error handling, etc.
-- Adaptive algorithm selects questions based on user performance and topic mastery
 
-### Shared (`shared/`)
-- Shared utilities and helper functions used by both frontend and backend
-- Validation functions
-- Question format definitions
+### Source Code (`src/`)
+
+- JavaScript implementation and utilities
+- Core learning platform logic
+
+### Philosophy (`Philosophy/`)
+
+- Design principles and pedagogical approach
+- Learning objectives and theory
 
 ## Commands
 
-### Frontend Development
+### Project Setup
 ```bash
-cd frontend
-npm install
-npm run dev       # Start Vite dev server
-npm run build     # Build for production
-npm run lint      # Lint with ESLint
+pnpm install      # Install all dependencies
 ```
 
-### Backend Development
+### Development
 ```bash
-cd backend
-npm install
-npm run dev       # Start dev server with hot reload
-npm run build     # Build for production (if needed)
-npm run test      # Run test suite
-npm run lint      # Lint with ESLint
+pnpm run dev      # Start development server (if configured)
 ```
 
-### Running Full Stack Locally
+### Linting & Code Quality
 ```bash
-# Terminal 1: Start backend
-cd backend && npm run dev
-
-# Terminal 2: Start frontend
-cd frontend && npm run dev
+pnpm run lint     # Run linter (ESLint/Biome)
+pnpm run format   # Format code
 ```
 
 ### Question Management
 ```bash
 # Validate question repository structure
-npm run validate-questions
+pnpm run validate-questions
 
 # Generate question index
-npm run index-questions
+pnpm run index-questions
 ```
 
 ## Key Design Decisions
 
-### Code Execution
-- User-submitted code is executed server-side in an isolated Node.js worker thread
-- Prevents malicious code from affecting the platform
-- Allows testing of Node.js-specific APIs (fs, crypto, etc.)
-- Results are streamed back to the frontend with timeout protection
+### Learning Approach
 
-### Adaptive Difficulty
-- Tracks user performance metrics: correct/incorrect attempts, time taken, topic mastery
-- Algorithm recommends next question based on:
-  - Current difficulty level (easy → medium → hard)
-  - Topics where user struggled
-  - Consecutive correct answers (increases difficulty)
-- User can manually adjust difficulty preference
+- Focus on **core JavaScript fundamentals** from the ECMAScript 2025 specification
+- Interactive study guides provide both theory and practical examples
+- Self-contained HTML files enable offline study and easy deployment
 
-### User Progress Tracking
-- Stores every attempt (code, result, timestamp) for learning analytics
-- Calculates strength/weakness scores by topic
-- Enables detailed performance review and recommendations
+### Content Organization
+
+- Topics grouped by concept (async/event loop, type system, functions, references)
+- Each guide includes explanations, code examples, and key takeaways
+- Knowledge hub (`study-notes/index.html`) connects related topics
+
+### Questions Repository
+
+- Challenges are decoupled from platform code for easy maintenance and updates
+- JSON/YAML format allows programmatic access and version control
+- Questions tagged by difficulty and topic for targeted practice
 
 ## Development Notes
 
-- **JavaScript**: Use `.js` files; consider JSDoc comments for documentation where helpful
-- **Monorepo**: Use workspace feature if using npm workspaces or consider Turborepo for build caching
-- **API versioning**: Start with `/api/v1/` for future compatibility
-- **Question format**: Validate schema at build time to catch errors early
-- **Testing**: Prioritize tests for code validation and adaptive algorithm logic
-- **Linting**: Use ESLint to maintain code consistency across frontend and backend
+- **Package Manager**: Use `pnpm` (configured in project)
+
+- **Study Guides**: Keep HTML files self-contained and accessible without a server where possible
+- **Navigation**: Update `study-notes/index.html` when adding new guides
+- **Questions**: Validate question JSON/YAML schema at build time
+- **Tagging**: Use consistent difficulty levels (beginner, intermediate, advanced) and topic tags across all questions
+- **Code Examples**: Test all example code in guides to ensure correctness
+- **ECMAScript**: Target ES2025 features and semantics; document any dependencies on newer spec features

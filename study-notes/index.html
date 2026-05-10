@@ -328,8 +328,8 @@
         <p>Obsidian-style hub with grouped navigation and verified relative links.</p>
       </div>
       <div class="stats">
-        <div class="stat"><strong>6</strong>Files</div>
-        <div class="stat"><strong>4</strong>Topics</div>
+        <div class="stat"><strong>8</strong>Files</div>
+        <div class="stat"><strong>6</strong>Topics</div>
         <div class="stat"><strong>0</strong>Broken</div>
       </div>
       <nav aria-label="Study note navigation">
@@ -345,6 +345,11 @@
         <summary>Functions</summary>
         <ul><li><a href="#arrayfunctions-1"><span>JavaScript Arrow Functions</span><small>arrayFunctions(1).html</small></a></li></ul>
       </details>
+
+      <details class="sidebar-group" open>
+        <summary>Operators & Control Flow</summary>
+        <ul><li><a href="#null-coalescing-short-circuit"><span>Null Coalescing & Short-Circuiting</span><small>null-coalescing-short-circuit.html</small></a></li></ul>
+      </details>
     
       <details class="sidebar-group" open>
         <summary>Type System / Coercion</summary>
@@ -355,7 +360,12 @@
         <summary>Type System / Symbols</summary>
         <ul><li><a href="#symbolcoercion"><span>🔣 JavaScript Symbol Coercion</span><small>symbolCoercion.html</small></a></li></ul>
       </details>
-    
+
+      <details class="sidebar-group" open>
+        <summary>Call by Sharing (pass by reference)</summary>
+        <ul><li><a href="#reference-vs-mutation"><span>Reference vs Mutation</span><small>reference-vs-mutation.html</small></a></li></ul>
+      </details>
+
       </nav>
     </aside>
 
@@ -364,7 +374,7 @@
         <h1>JavaScript Study Notes Knowledge Hub</h1>
         <p class="subtitle">A dashboard for your study-note HTML files, grouped by topic. Links are relative to this <code>index.html</code> file, so the whole <code>study-notes</code> folder can be deployed as-is.</p>
         <div class="quick-links">
-          <a href="#event-queues-advanced">🔄 JavaScript Event Queues</a><a href="#event-queues">🔄 JavaScript Promise Chain with setTimeout</a><a href="#promise-chaining">JavaScript Promise Chaining</a><a href="#arrayfunctions">JavaScript Arrow Functions</a><a href="#typecoercion">Type Coercion in JavaScript (ECMAScript 2025)</a><a href="#symbolcoercion">🔣 JavaScript Symbol Coercion</a>
+          <a href="#event-queues-advanced">🔄 JavaScript Event Queues</a><a href="#event-queues">🔄 JavaScript Promise Chain with setTimeout</a><a href="#promise-chaining">JavaScript Promise Chaining</a><a href="#arrayfunctions">JavaScript Arrow Functions</a><a href="#null-coalescing-short-circuit">Null Coalescing & Short-Circuiting</a><a href="#typecoercion">Type Coercion in JavaScript (ECMAScript 2025)</a><a href="#symbolcoercion">🔣 JavaScript Symbol Coercion</a><a href="#reference-vs-mutation">Reference vs Mutation</a>
         </div>
       </header>
 
@@ -434,7 +444,7 @@
           <span>1 file</span>
         </div>
         <div class="cards">
-          
+
           <article class="card" id="arrayfunctions-1">
             <div class="card-top">
               <div>
@@ -451,7 +461,33 @@
             <!-- <ul class='mini-list'><li>1. Summary</li><li>Traditional function</li><li>Arrow function</li><li>Visual: Arrow Function Binding Model</li><li>2. Details</li></ul> -->
             <div class='related'><strong>Related:</strong> <a class="chip" href="#async-event-loop">Async / Event Loop</a></div>
           </article>
-        
+
+        </div>
+      </section>
+
+      <section class="topic-section" id="operators-control-flow">
+        <div class="section-heading">
+          <h2>Operators & Control Flow</h2>
+          <span>1 file</span>
+        </div>
+        <div class="cards">
+
+          <article class="card" id="null-coalescing-short-circuit">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Operators & Control Flow</p>
+                <h3>Null Coalescing & Short-Circuiting</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./null-coalescing-short-circuit.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>null-coalescing-short-circuit.html</code></p>
+            <p>Comprehensive guide to logical operators, null coalescing (??), short-circuit evaluation, and optional chaining (?.)—with mental models, edge cases, and real-world patterns.</p>
+            <div class='related'><strong>Related:</strong> <a class="chip" href="#type-system-coercion">Type System / Coercion</a></div>
+          </article>
+
         </div>
       </section>
     
@@ -487,7 +523,7 @@
           <span>1 file</span>
         </div>
         <div class="cards">
-          
+
           <article class="card" id="symbolcoercion">
             <div class="card-top">
               <div>
@@ -503,18 +539,42 @@
             <p>Understanding how Symbols behave with type conversion</p>
             <div class='related'><strong>Related:</strong> <a class="chip" href="#type-system-coercion">Type System / Coercion</a></div>
           </article>
-        
+
         </div>
       </section>
-    
 
-      <p class="footer">Generated from a recursive study-note scan. Local link verification: 6 passed, 0 failed.</p>
+      <section class="topic-section" id="call-by-sharing">
+        <div class="section-heading">
+          <h2>Call by Sharing (pass by reference)</h2>
+          <span>1 file</span>
+        </div>
+        <div class="cards">
+
+          <article class="card" id="reference-vs-mutation">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow">Call by Sharing (pass by reference)</p>
+                <h3>Reference vs Mutation</h3>
+              </div>
+              <div class="actions">
+                <span class="status ok">● Verified</span>
+                <a class="open-link" href="./reference-vs-mutation.html">Open</a>
+              </div>
+            </div>
+            <p class="filename"><code>reference-vs-mutation.html</code></p>
+            <p>Understanding references, mutations, and JavaScript's call-by-sharing semantics</p>
+          </article>
+
+        </div>
+      </section>
+
+      <p class="footer">Generated from a recursive study-note scan. Local link verification: 8 passed, 0 failed.</p>
     </main>
   </div>
 
   <script id="verified-links" type="application/json">[
   {
-    &quot;href&quot;: &quot;arrayFunctions(1).html&quot;,
+    &quot;href&quot;: &quot;arrayFunctions.html&quot;,
     &quot;exists&quot;: true
   },
   {
@@ -526,7 +586,15 @@
     &quot;exists&quot;: true
   },
   {
+    &quot;href&quot;: &quot;null-coalescing-short-circuit.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
     &quot;href&quot;: &quot;promise-chaining.html&quot;,
+    &quot;exists&quot;: true
+  },
+  {
+    &quot;href&quot;: &quot;reference-vs-mutation.html&quot;,
     &quot;exists&quot;: true
   },
   {

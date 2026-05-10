@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Reference vs Mutation Tutorial — ECMAScript 2026</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+      --code-border: #1e3a8a;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+                  radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 72px; }
+    header, section {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+    header { padding: 32px; margin-bottom: 28px; }
+    section { padding: 28px; margin: 22px 0; }
+    h1, h2, h3, h4 { color: #f8fafc; line-height: 1.25; margin-top: 0; }
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 10px; letter-spacing: -0.04em; }
+    h2 { font-size: 1.85rem; margin-top: 0; }
+    h3 { font-size: 1.25rem; margin-top: 30px; color: #dbeafe; }
+    h4 { color: var(--accent); margin-bottom: 8px; }
+    p, li { color: var(--text); }
+    a { color: var(--accent); }
+    .subtitle { color: var(--muted); font-size: 1.05rem; max-width: 900px; margin: 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.75); color: #dbeafe; padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; }
+    .toc { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; padding: 0; list-style: none; }
+    .toc li { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.65); border-radius: 14px; }
+    .toc a { display: block; padding: 12px 14px; color: var(--accent); text-decoration: none; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(125, 211, 252, 0.12); color: #dbeafe; padding: 0.15rem 0.35rem; border-radius: 6px; font-size: 0.95em; }
+    pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 16px; }
+    pre code { background: transparent; padding: 0; color: #e0f2fe; font-size: 0.92rem; }
+    .comment { color: #94a3b8; } .keyword { color: #93c5fd; } .string { color: #86efac; } .number { color: #fcd34d; } .method { color: #c4b5fd; }
+    table { width: 100%; border-collapse: collapse; margin: 18px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #1e293b; color: #eff6ff; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    .callout { border: 1px solid var(--border); border-left: 5px solid var(--accent); background: rgba(30, 41, 59, 0.8); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+    .callout.warn { border-left-color: var(--warn); } .callout.bad { border-left-color: var(--bad); } .callout.good { border-left-color: var(--good); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 18px; background: rgba(15, 23, 42, 0.72); padding: 18px; }
+    .explain { color: var(--muted); margin-top: 8px; }
+    .diagram { margin: 22px 0; padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); overflow-x: auto; }
+    .flow { display: flex; align-items: center; gap: 12px; min-width: 760px; }
+    .node { min-width: 150px; padding: 14px 12px; border: 1px solid #475569; border-radius: 16px; text-align: center; background: #0f172a; box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+    .node.wide { min-width: 230px; }
+    .node.accent { border-color: var(--accent); background: rgba(14, 116, 144, 0.2); }
+    .node.good { border-color: var(--good); background: rgba(22, 101, 52, 0.2); }
+    .node.warn { border-color: var(--warn); background: rgba(113, 63, 18, 0.2); }
+    .node.bad { border-color: var(--bad); background: rgba(127, 29, 29, 0.18); }
+    .arrow { color: var(--accent); font-size: 1.4rem; white-space: nowrap; }
+    .memory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-width: 760px; }
+    .memory-box { border: 1px solid #475569; border-radius: 18px; padding: 18px; background: rgba(15,23,42,.92); }
+    .memory-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+    .label { min-width: 72px; color: #bfdbfe; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .value { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: #111827; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .object-store { border: 2px dashed var(--accent); border-radius: 14px; padding: 12px; background: rgba(14,116,144,.12); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .code-block-wrapper { position: relative; margin: 14px 0 10px; }
+    .copy-button { position: absolute; top: 10px; right: 10px; z-index: 2; border: 1px solid #38bdf8; background: rgba(14, 116, 144, 0.95); color: white; padding: 6px 10px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .copy-button:hover { background: rgba(8, 145, 178, 1); }
+    .copy-button.copied { border-color: var(--good); background: rgba(22, 101, 52, 0.95); }
+    .footer { text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.95rem; }
+    @media (max-width: 760px) {
+      header, section { padding: 20px; }
+      .container { padding: 22px 14px 44px; }
+      .memory-grid { grid-template-columns: 1fr; min-width: 620px; }
+      .flow { min-width: 680px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>JavaScript Reference vs Mutation</h1>
+      <p class="subtitle">A practical tutorial for understanding value copying, object references, mutation, reassignment, shallow copies, and safe update patterns in modern JavaScript.</p>
+      <div class="pill-row">
+        <span class="pill">ECMAScript 2026 aligned</span>
+        <span class="pill">Mental models</span>
+        <span class="pill">Code examples</span>
+        <span class="pill">Diagrams</span>
+        <span class="pill">Gotchas</span>
+      </div>
+      <ul class="toc">
+        <li><a href="#concept">1. Concept and Example</a></li>
+        <li><a href="#mental-model">2. Mental Model</a></li>
+        <li><a href="#code-examples">3. Code Examples</a></li>
+        <li><a href="#gotchas">4. Gotchas and Non-intuitive Examples</a></li>
+        <li><a href="#best-practices">5. Best Practices</a></li>
+        <li><a href="#summary">6. Summary</a></li>
+      </ul>
+    </header>
+
+    <section id="concept">
+      <h2>1. Concept and Example</h2>
+      <p>JavaScript variables store values. For primitive values, the value itself is copied. For objects, arrays, and functions, the value copied is a <strong>reference</strong> to an object.</p>
+      <div class="callout good"><strong>Core idea:</strong> JavaScript is pass-by-value, but object values are references. That means the reference is copied, not the object itself.</div>
+
+      <table>
+        <thead><tr><th>Kind of value</th><th>Examples</th><th>Assignment behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Primitive</td><td><code>number</code>, <code>string</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>symbol</code>, <code>bigint</code></td><td>Copies the primitive value.</td></tr>
+          <tr><td>Object</td><td><code>{}</code>, <code>[]</code>, functions, dates, maps, sets</td><td>Copies a reference to the same object.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Primitive copy</h3>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">let</span> a = <span class="number">10</span>;
+<span class="keyword">let</span> b = a;
+
+b = <span class="number">20</span>;
+
+console.<span class="method">log</span>(a); <span class="comment">// 10</span>
+console.<span class="method">log</span>(b); <span class="comment">// 20</span></code></pre>
+          </div>
+          <p class="explain">Changing <code>b</code> does not affect <code>a</code> because the number value was copied.</p>
+        </div>
+        <div class="card">
+          <h3>Reference copy</h3>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">const</span> obj1 = { count: <span class="number">1</span> };
+<span class="keyword">const</span> obj2 = obj1;
+
+obj2.count = <span class="number">5</span>;
+
+console.<span class="method">log</span>(obj1.count); <span class="comment">// 5</span>
+console.<span class="method">log</span>(obj2.count); <span class="comment">// 5</span></code></pre>
+          </div>
+          <p class="explain">Both variables point at the same object, so mutating through one variable is visible through the other.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mental-model">
+      <h2>2. Mental Model</h2>
+      <p>The most useful mental model is to separate <strong>variable bindings</strong> from <strong>object storage</strong>. A variable can hold a primitive directly, or it can hold a reference to an object elsewhere in memory.</p>
+
+      <div class="diagram">
+        <h3>Visual: Primitive values are copied</h3>
+        <div class="memory-grid">
+          <div class="memory-box">
+            <h4>After <code>let b = a</code></h4>
+            <div class="memory-row"><span class="label">a</span><span class="arrow">→</span><span class="value">10</span></div>
+            <div class="memory-row"><span class="label">b</span><span class="arrow">→</span><span class="value">10</span></div>
+          </div>
+          <div class="memory-box">
+            <h4>After <code>b = 20</code></h4>
+            <div class="memory-row"><span class="label">a</span><span class="arrow">→</span><span class="value">10</span></div>
+            <div class="memory-row"><span class="label">b</span><span class="arrow">→</span><span class="value">20</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diagram">
+        <h3>Visual: Object references are copied</h3>
+        <div class="flow">
+          <div class="node"><code>obj1</code></div>
+          <div class="arrow">points to</div>
+          <div class="node accent wide"><code>{ count: 1 }</code><br>object in memory</div>
+          <div class="arrow">also pointed to by</div>
+          <div class="node"><code>obj2</code></div>
+        </div>
+      </div>
+
+      <h3>Mutation vs reassignment</h3>
+      <div class="grid-2">
+        <div class="card">
+          <h4>Mutation</h4>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">const</span> user = { name: <span class="string">"Ada"</span> };
+
+user.name = <span class="string">"Grace"</span>;
+
+console.<span class="method">log</span>(user);
+<span class="comment">// { name: "Grace" }</span></code></pre>
+          </div>
+          <p class="explain">Mutation changes the existing object.</p>
+        </div>
+        <div class="card">
+          <h4>Reassignment</h4>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">let</span> user = { name: <span class="string">"Ada"</span> };
+
+user = { name: <span class="string">"Grace"</span> };
+
+console.<span class="method">log</span>(user);
+<span class="comment">// { name: "Grace" }</span></code></pre>
+          </div>
+          <p class="explain">Reassignment makes the variable point to a different object.</p>
+        </div>
+      </div>
+
+      <div class="callout warn"><strong>Important distinction:</strong> <code>const</code> prevents reassignment of the variable binding. It does not freeze or protect the object from mutation.</div>
+    </section>
+
+    <section id="code-examples">
+      <h2>3. Code Examples</h2>
+
+      <h3>3.1 Array reference mutation</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> arr1 = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">const</span> arr2 = arr1;
+
+arr2.<span class="method">push</span>(<span class="number">4</span>);
+
+console.<span class="method">log</span>(arr1); <span class="comment">// [1, 2, 3, 4]</span>
+console.<span class="method">log</span>(arr2); <span class="comment">// [1, 2, 3, 4]</span></code></pre>
+      </div>
+      <p class="explain"><code>arr1</code> and <code>arr2</code> reference the same array. <code>push</code> mutates that shared array.</p>
+
+      <h3>3.2 Avoid mutation with a shallow copy</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> arr1 = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">const</span> arr2 = [...arr1];
+
+arr2.<span class="method">push</span>(<span class="number">4</span>);
+
+console.<span class="method">log</span>(arr1); <span class="comment">// [1, 2, 3]</span>
+console.<span class="method">log</span>(arr2); <span class="comment">// [1, 2, 3, 4]</span></code></pre>
+      </div>
+      <p class="explain">The spread syntax creates a new top-level array, so <code>arr2.push()</code> does not change <code>arr1</code>.</p>
+
+      <h3>3.3 Function parameters can mutate objects</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> increment(obj) {
+  obj.value++;
+}
+
+<span class="keyword">const</span> data = { value: <span class="number">1</span> };
+
+increment(data);
+
+console.<span class="method">log</span>(data.value); <span class="comment">// 2</span></code></pre>
+      </div>
+      <p class="explain">The function receives a copy of the reference. It cannot reassign the caller's variable, but it can mutate the object the reference points to.</p>
+
+      <h3>3.4 Return a new object instead</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> increment(obj) {
+  <span class="keyword">return</span> { ...obj, value: obj.value + <span class="number">1</span> };
+}
+
+<span class="keyword">const</span> data = { value: <span class="number">1</span> };
+<span class="keyword">const</span> updated = increment(data);
+
+console.<span class="method">log</span>(data.value);    <span class="comment">// 1</span>
+console.<span class="method">log</span>(updated.value); <span class="comment">// 2</span></code></pre>
+      </div>
+      <p class="explain">This is an immutable update pattern. The original object remains unchanged.</p>
+
+      <h3>3.5 Shallow copy with nested objects</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> original = {
+  user: { name: <span class="string">"Ada"</span> }
+};
+
+<span class="keyword">const</span> copy = { ...original };
+
+copy.user.name = <span class="string">"Grace"</span>;
+
+console.<span class="method">log</span>(original.user.name); <span class="comment">// "Grace"</span></code></pre>
+      </div>
+      <p class="explain">The outer object was copied. The nested <code>user</code> object was still shared.</p>
+
+      <div class="diagram">
+        <h3>Visual: Shallow copy keeps nested references</h3>
+        <div class="flow">
+          <div class="node"><code>original</code><br>outer object</div>
+          <div class="arrow">shares nested</div>
+          <div class="node accent wide"><code>{ name: "Ada" }</code><br>same user object</div>
+          <div class="arrow">with</div>
+          <div class="node"><code>copy</code><br>new outer object</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gotchas">
+      <h2>4. Gotchas and Non-intuitive Examples Explained</h2>
+
+      <h3>4.1 <code>const</code> does not mean immutable</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> obj = { value: <span class="number">1</span> };
+
+obj.value = <span class="number">2</span>; <span class="comment">// allowed</span>
+obj = {};      <span class="comment">// TypeError</span></code></pre>
+      </div>
+      <div class="callout warn"><strong>Why:</strong> <code>const</code> locks the variable binding. It does not lock the object behind the reference.</div>
+
+      <h3>4.2 Some array methods mutate and some do not</h3>
+      <table>
+        <thead><tr><th>Mutates original array</th><th>Does not mutate original array</th></tr></thead>
+        <tbody>
+          <tr><td><code>push</code>, <code>pop</code>, <code>shift</code>, <code>unshift</code></td><td><code>map</code>, <code>filter</code>, <code>reduce</code></td></tr>
+          <tr><td><code>sort</code>, <code>reverse</code>, <code>splice</code>, <code>fill</code></td><td><code>slice</code>, <code>concat</code>, <code>toSorted</code>, <code>toReversed</code>, <code>toSpliced</code></td></tr>
+        </tbody>
+      </table>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> nums = [<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>];
+
+nums.<span class="method">sort</span>();
+
+console.<span class="method">log</span>(nums); <span class="comment">// [1, 2, 3] - original changed</span></code></pre>
+      </div>
+      <p class="explain"><code>sort()</code> is a common surprise because many developers expect it to return a sorted copy. Use <code>toSorted()</code> or <code>[...nums].sort()</code> when you need to preserve the original.</p>
+
+      <h3>4.3 Object equality checks identity, not structure</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> a = { x: <span class="number">1</span> };
+<span class="keyword">const</span> b = { x: <span class="number">1</span> };
+<span class="keyword">const</span> c = a;
+
+console.<span class="method">log</span>(a === b); <span class="comment">// false</span>
+console.<span class="method">log</span>(a === c); <span class="comment">// true</span></code></pre>
+      </div>
+      <p class="explain"><code>a</code> and <code>b</code> look the same, but they are different objects. <code>a</code> and <code>c</code> point to the same object.</p>
+
+      <h3>4.4 Reassigning a parameter does not reassign the caller's variable</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> replaceUser(user) {
+  user = { name: <span class="string">"Grace"</span> };
+}
+
+<span class="keyword">const</span> person = { name: <span class="string">"Ada"</span> };
+replaceUser(person);
+
+console.<span class="method">log</span>(person.name); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+      <p class="explain">The parameter <code>user</code> is a local variable. Reassigning it only changes the local binding inside the function.</p>
+
+      <h3>4.5 Mutating a parameter does affect the original object</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> renameUser(user) {
+  user.name = <span class="string">"Grace"</span>;
+}
+
+<span class="keyword">const</span> person = { name: <span class="string">"Ada"</span> };
+renameUser(person);
+
+console.<span class="method">log</span>(person.name); <span class="comment">// "Grace"</span></code></pre>
+      </div>
+      <p class="explain">This time the function did not reassign the local variable. It followed the reference and changed the object itself.</p>
+
+      <h3>4.6 Spread is shallow</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> state = {
+  profile: { name: <span class="string">"Ada"</span> },
+  loggedIn: <span class="keyword">true</span>
+};
+
+<span class="keyword">const</span> nextState = { ...state };
+nextState.profile.name = <span class="string">"Grace"</span>;
+
+console.<span class="method">log</span>(state.profile.name); <span class="comment">// "Grace"</span></code></pre>
+      </div>
+      <p class="explain">A shallow copy copies one level. Nested objects still need their own copies if you want true immutability for that path.</p>
+
+      <h3>4.7 Correct nested immutable update</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> state = {
+  profile: { name: <span class="string">"Ada"</span> },
+  loggedIn: <span class="keyword">true</span>
+};
+
+<span class="keyword">const</span> nextState = {
+  ...state,
+  profile: {
+    ...state.profile,
+    name: <span class="string">"Grace"</span>
+  }
+};
+
+console.<span class="method">log</span>(state.profile.name);     <span class="comment">// "Ada"</span>
+console.<span class="method">log</span>(nextState.profile.name); <span class="comment">// "Grace"</span></code></pre>
+      </div>
+    </section>
+
+    <section id="best-practices">
+      <h2>5. Best Practices</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Prefer immutable updates for app state</h3>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">const</span> updatedUser = {
+  ...user,
+  name: <span class="string">"Grace"</span>
+};</code></pre>
+          </div>
+          <p class="explain">This makes data flow easier to reason about, especially in React, reducers, and tests.</p>
+        </div>
+        <div class="card">
+          <h3>Avoid mutating function arguments</h3>
+          <div class="code-block-wrapper">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">function</span> rename(user, name) {
+  <span class="keyword">return</span> { ...user, name };
+}</code></pre>
+          </div>
+          <p class="explain">Returning a new value makes the function safer and more predictable.</p>
+        </div>
+      </div>
+
+      <h3>Use modern non-mutating array methods when available</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> nums = [<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>];
+
+<span class="keyword">const</span> sorted = nums.<span class="method">toSorted</span>();
+<span class="keyword">const</span> reversed = nums.<span class="method">toReversed</span>();
+<span class="keyword">const</span> withoutMiddle = nums.<span class="method">toSpliced</span>(<span class="number">1</span>, <span class="number">1</span>);
+
+console.<span class="method">log</span>(nums); <span class="comment">// [3, 1, 2]</span></code></pre>
+      </div>
+
+      <h3>Use <code>structuredClone</code> for deep copies when appropriate</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> original = {
+  user: { name: <span class="string">"Ada"</span> },
+  tags: [<span class="string">"js"</span>, <span class="string">"state"</span>]
+};
+
+<span class="keyword">const</span> copy = structuredClone(original);
+
+copy.user.name = <span class="string">"Grace"</span>;
+
+console.<span class="method">log</span>(original.user.name); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+      <div class="callout warn"><strong>Note:</strong> Deep cloning is not always the best answer. It can be more expensive than copying only the parts you need to update.</div>
+
+      <h3>Freeze configuration objects when mutation would be dangerous</h3>
+      <div class="code-block-wrapper">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> config = Object.<span class="method">freeze</span>({
+  apiBaseUrl: <span class="string">"/api/v1"</span>
+});
+
+config.apiBaseUrl = <span class="string">"/api/v2"</span>; <span class="comment">// ignored or throws in strict mode</span></code></pre>
+      </div>
+      <p class="explain"><code>Object.freeze</code> is shallow. Nested objects need to be frozen separately if you need deep protection.</p>
+
+      <div class="diagram">
+        <h3>Visual: Decision Guide</h3>
+        <div class="flow">
+          <div class="node">Do you need to preserve the original?</div>
+          <div class="arrow">yes →</div>
+          <div class="node good">copy then update</div>
+          <div class="arrow">no →</div>
+          <div class="node warn">mutation may be OK</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="summary">
+      <h2>6. Summary</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Primitive values</h3>
+          <p>Numbers, strings, booleans, <code>null</code>, <code>undefined</code>, symbols, and bigints are copied as values.</p>
+        </div>
+        <div class="card">
+          <h3>Objects</h3>
+          <p>Objects, arrays, and functions are accessed through references. Assignment copies the reference.</p>
+        </div>
+        <div class="card">
+          <h3>Mutation</h3>
+          <p>Mutation changes an existing object. Every variable referencing that object can observe the change.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>Does assignment copy an object?</td><td>No. It copies the reference.</td></tr>
+          <tr><td>Does <code>const</code> make an object immutable?</td><td>No. It only prevents reassignment of the binding.</td></tr>
+          <tr><td>Does spread make a deep copy?</td><td>No. Spread is shallow.</td></tr>
+          <tr><td>Can functions mutate passed objects?</td><td>Yes, if they modify the object through the copied reference.</td></tr>
+          <tr><td>How do you avoid shared mutation?</td><td>Create a new object or array for the parts you need to change.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout good"><strong>Final rule:</strong> Primitive → value copy. Object → reference copy. Mutation → shared effect. Reassignment → new binding target.</div>
+    </section>
+
+    <p class="footer">Standalone HTML tutorial generated for JavaScript Reference vs Mutation.</p>
+  </div>
+
+  <script>
+    function copyCode(button) {
+      const codeBlock = button.parentElement.querySelector('pre code');
+      const code = codeBlock.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = button.innerText;
+        button.textContent = 'Copied!';
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 1600);
+      }).catch(() => {
+        button.textContent = 'Copy failed';
+        setTimeout(() => { button.textContent = 'Copy'; }, 1600);
+      });
+    }
+  </script>
+</body>
+</html>
