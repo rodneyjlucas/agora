@@ -10,7 +10,7 @@ Agora is an interactive JavaScript learning platform focused on **core ECMAScrip
 
 Agora is organized with the following structure:
 
-```
+```text
 agora/
 ├── study-notes/       # Interactive HTML study guides and tutorials
 ├── questions/         # Question/challenge repository (JSON/YAML files)
@@ -56,22 +56,26 @@ agora/
 ## Commands
 
 ### Project Setup
+
 ```bash
 pnpm install      # Install all dependencies
 ```
 
 ### Development
+
 ```bash
 pnpm run dev      # Start development server (if configured)
 ```
 
 ### Linting & Code Quality
+
 ```bash
 pnpm run lint     # Run linter (ESLint/Biome)
 pnpm run format   # Format code
 ```
 
 ### Question Management
+
 ```bash
 # Validate question repository structure
 pnpm run validate-questions
@@ -103,7 +107,6 @@ pnpm run index-questions
 ## Development Notes
 
 - **Package Manager**: Use `pnpm` (configured in project)
-
 - **Study Guides**: Keep HTML files self-contained and accessible without a server where possible
 - **Navigation**: Update `study-notes/index.html` when adding new guides
 - **Questions**: Validate question JSON/YAML schema at build time
