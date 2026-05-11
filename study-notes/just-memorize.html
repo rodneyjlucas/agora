@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Just Memorize: JavaScript Quirks & Historical Bugs</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --border: #334155;
+      --code-bg: #0b1220;
+      --code-text: #dbeafe;
+      --table-head: #1e293b;
+      --ok: #86efac;
+      --warn: #fcd34d;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    header {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+      color: #f8fafc;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      padding-top: 8px;
+      font-size: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 1.15rem;
+      color: #dbeafe;
+    }
+
+    p, li {
+      color: var(--text);
+    }
+
+    .lede {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .section {
+      background: rgba(17, 24, 39, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(96, 165, 250, 0.12);
+      color: #dbeafe;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    pre {
+      margin: 14px 0 18px;
+      padding: 16px;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 1px solid #1e3a8a;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    .quirk {
+      margin: 20px 0;
+      padding: 16px;
+      border-left: 4px solid var(--danger);
+      background: rgba(248, 113, 113, 0.08);
+      border-radius: 8px;
+    }
+
+    .quirk strong {
+      color: var(--danger);
+    }
+
+    .explanation {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    .toc {
+      margin-top: 18px;
+      padding-left: 18px;
+      columns: 2;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover { text-decoration: underline; }
+
+    .callout {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.75);
+    }
+
+    .callout strong {
+      color: #f8fafc;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .toc { columns: 1; }
+      .container { padding: 20px 14px 40px; }
+      .section { padding: 18px; }
+      h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Just Memorize: JavaScript Quirks & Historical Bugs</h1>
+      <p class="lede">
+        A collection of JavaScript behaviors that don't make sense but exist for historical reasons.
+        These quirks trip up every developer—memorize them to avoid surprises in production.
+      </p>
+      <ol class="toc">
+        <li><a href="#section-1">Type System Quirks</a></li>
+        <li><a href="#section-2">Equality & Coercion Traps</a></li>
+        <li><a href="#section-3">Floating Point Precision</a></li>
+        <li><a href="#section-4">Variable & Function Hoisting</a></li>
+        <li><a href="#section-5">Array & Object Oddities</a></li>
+        <li><a href="#section-6">this Binding Surprises</a></li>
+        <li><a href="#section-7">String & Number Quirks</a></li>
+        <li><a href="#section-8">Scope & Global Issues</a></li>
+      </ol>
+    </header>
+
+    <section class="section" id="section-1">
+      <h2>1. Type System Quirks</h2>
+
+      <div class="quirk">
+        <strong>typeof null === "object"</strong>
+        <pre><code>typeof null;        // "object" (NOT "null"!)
+typeof undefined;   // "undefined"
+typeof NaN;         // "number" (NaN is a number)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> This is a bug in JavaScript's original design. <code>null</code> was supposed to have type "null", but a bug in the original implementation returned "object" instead. It was never fixed for backward compatibility.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>NaN !== NaN</strong>
+        <pre><code>NaN === NaN;           // false
+Object.is(NaN, NaN);   // true
+Number.isNaN(NaN);     // true
+isNaN("hello");        // true (coerces to number first)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> IEEE 754 floating-point standard defines NaN as not equal to itself. Use <code>Number.isNaN()</code> or <code>Object.is()</code> to properly check for NaN.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>typeof function returns "function", but functions are objects</strong>
+        <pre><code>typeof (() => {});     // "function"
+typeof class {};       // "function"
+typeof String;         // "function"
+
+Array.isArray([]);     // true (because Array is also a function)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Functions are objects in JavaScript, but <code>typeof</code> returns a special "function" type for callable objects. Classes and constructors are functions too.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-2">
+      <h2>2. Equality & Coercion Traps</h2>
+
+      <div class="quirk">
+        <strong>[] == false is true (but [] === false is false)</strong>
+        <pre><code>[] == false;        // true
+[] === false;       // false
+
+[] == "";           // true
+[] == 0;            // true
+
+"" == 0;            // true
+"" == false;        // true</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> The <code>==</code> operator performs type coercion. An empty array converts to an empty string, which converts to 0, which coerces to false. Always use <code>===</code>.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>null == undefined (but null === undefined is false)</strong>
+        <pre><code>null == undefined;   // true
+null === undefined;  // false
+
+null == 0;           // false
+undefined == 0;      // false</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>null</code> and <code>undefined</code> are treated as equivalent by the <code>==</code> operator specifically. This is the one case where <code>==</code> can be useful: <code>value == null</code> checks for both null and undefined.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>[] + [] returns "", but {} + [] returns 0</strong>
+        <pre><code>[] + [];             // ""
+[] + {};             // "[object Object]"
+{} + [];             // 0 (block statement + unary plus)
+{} + {};             // NaN</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Context matters. <code>{}</code> at the start of a statement is parsed as a block, not an object literal. The <code>+ []</code> is unary plus on an array. Always use parentheses for clarity: <code>({} + [])</code>.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-3">
+      <h2>3. Floating Point Precision</h2>
+
+      <div class="quirk">
+        <strong>0.1 + 0.2 !== 0.3</strong>
+        <pre><code>0.1 + 0.2;                    // 0.30000000000000004
+0.1 + 0.2 === 0.3;           // false
+
+Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON;  // true</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> JavaScript uses IEEE 754 64-bit floating-point representation. Decimal fractions like 0.1 cannot be represented exactly in binary. For financial calculations, use integers (cents) or a decimal library.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Very large integers lose precision</strong>
+        <pre><code>9007199254740992 === 9007199254740993;  // true!
+Number.MAX_SAFE_INTEGER;                 // 9007199254740991
+Number.MIN_SAFE_INTEGER;                 // -9007199254740991
+
+999999999999999999 === 1000000000000000000;  // true</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> JavaScript numbers have 53 bits of precision. Beyond that, consecutive integers are indistinguishable. Use <code>BigInt</code> for large integers.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-4">
+      <h2>4. Variable & Function Hoisting</h2>
+
+      <div class="quirk">
+        <strong>var declarations are hoisted, but not initialized</strong>
+        <pre><code>console.log(x);  // undefined (not a ReferenceError!)
+var x = 5;
+console.log(x);  // 5
+
+// This is what actually happens:
+var x;           // hoisted, initialized to undefined
+console.log(x);  // undefined
+x = 5;
+console.log(x);  // 5</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Hoisting is a result of JavaScript's two-pass compilation. Declarations are processed before execution. This is why code using <code>var</code> before declaration doesn't crash—use <code>const</code>/<code>let</code> instead.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Function declarations are fully hoisted</strong>
+        <pre><code>console.log(foo());  // "hello" (works!)
+function foo() {
+  return "hello";
+}
+
+// But function expressions are not
+console.log(bar);    // undefined
+console.log(bar()); // TypeError: bar is not a function
+var bar = function() { return "world"; };</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Function declarations are moved entirely to the top of their scope. Function expressions (assigned to variables) follow variable hoisting rules instead.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>const/let have a Temporal Dead Zone</strong>
+        <pre><code>console.log(x);  // ReferenceError!
+let x = 5;
+
+// let and const are NOT hoisted in the traditional sense
+// They're in a "Temporal Dead Zone" until the declaration is reached</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>let</code> and <code>const</code> exist from the start of the block scope, but accessing them before the declaration line throws an error. This prevents the "undefined" footgun of <code>var</code>.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-5">
+      <h2>5. Array & Object Oddities</h2>
+
+      <div class="quirk">
+        <strong>Array.length can be manually set</strong>
+        <pre><code>const arr = [1, 2, 3];
+arr.length = 2;
+console.log(arr);    // [1, 2] (element 3 deleted!)
+
+arr.length = 5;
+console.log(arr);    // [1, 2, empty × 3]
+console.log(arr[4]); // undefined</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>length</code> is not a special property—it's a regular property that controls the array size. Setting it to a smaller number deletes elements; setting it to a larger number creates empty slots (sparse array).
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Sparse arrays skip undefined elements in iteration</strong>
+        <pre><code>const sparse = [1, , 3];  // empty slot at index 1
+sparse.forEach((val, i) => console.log(i, val));
+// Logs: 0 1
+//       2 3
+// (skips the empty slot!)
+
+for (let i = 0; i < sparse.length; i++) {
+  console.log(i, sparse[i]);  // Logs all indices including undefined
+}</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Array methods like <code>forEach</code>, <code>map</code>, and <code>filter</code> skip empty slots. Traditional <code>for</code> loops don't. This inconsistency causes bugs.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Object property order is mostly insertion order, except for integer keys</strong>
+        <pre><code>const obj = { b: 2, a: 1, 1: "one" };
+Object.keys(obj);  // ["1", "b", "a"] (integer keys first!)
+
+const obj2 = { "1": "a", b: 2, "0": "c" };
+Object.keys(obj2); // ["0", "1", "b"] (numeric order first, then insertion)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Integer-like property keys (0-4294967295) are ordered by numeric value first, then non-integer keys follow insertion order. This is a legacy behavior.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-6">
+      <h2>6. this Binding Surprises</h2>
+
+      <div class="quirk">
+        <strong>this in regular functions depends on how they're called</strong>
+        <pre><code>function greet() {
+  console.log(this);
+}
+
+const obj = { greet };
+obj.greet();        // this = obj
+greet();            // this = window (or undefined in strict mode)
+
+const fn = obj.greet;
+fn();               // this = window (lost the binding!)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>this</code> is determined dynamically at call time, not definition time. Calling <code>fn()</code> instead of <code>obj.greet()</code> loses the context. Use arrow functions or <code>.bind()</code>.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Arrow functions don't have their own this</strong>
+        <pre><code>const obj = {
+  name: "obj",
+  arrow: () => console.log(this),      // this = parent scope
+  method: function() { console.log(this); }  // this = obj
+};
+
+obj.arrow();   // this = window (or global)
+obj.method();  // this = obj</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Arrow functions inherit <code>this</code> from their enclosing scope at definition time. They're useful for callbacks but wrong for object methods.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Constructor calls with new set this to the instance</strong>
+        <pre><code>function User(name) {
+  this.name = name;  // this = new empty object
+}
+
+const user = new User("Alice");
+console.log(user.name);  // "Alice"
+
+// Without new, this is window/undefined
+User("Bob");  // this.name = "Bob" leaks to global scope!</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> The <code>new</code> keyword creates an object and sets it as <code>this</code>. Forgetting <code>new</code> causes <code>this</code> to be the wrong value. Use classes or always check <code>new.target</code>.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-7">
+      <h2>7. String & Number Quirks</h2>
+
+      <div class="quirk">
+        <strong>Strings have methods (autoboxing)</strong>
+        <pre><code>const str = "hello";
+str.toUpperCase();    // "HELLO" (works!)
+
+// How? JavaScript automatically wraps it:
+new String("hello").toUpperCase();
+
+str.foo = "bar";
+console.log(str.foo);  // undefined (the wrapper was discarded!)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> When you call a method on a primitive, JavaScript temporarily wraps it in an object (autoboxing), calls the method, then discards the wrapper. Assigning properties to primitives is useless.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Template literals can be tagged</strong>
+        <pre><code>const name = "Alice";
+const age = 25;
+
+const message = `Name: ${name}, Age: ${age}`;
+// Normal template literal
+
+const tagged = tag`Name: ${name}, Age: ${age}`;
+// The tag function receives the string parts and values separately</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Tagged template literals are a rarely-used feature where a function can intercept and process the template. Most developers never encounter them.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Number constructor behavior differs from Number function</strong>
+        <pre><code>Number("42");           // 42
+new Number("42");       // Number { 42 } (object, not primitive!)
+
+Number.prototype.valueOf.call(new Number("42"));  // 42
+
+new Number("42") == 42;   // true (coercion)
+new Number("42") === 42;  // false (different types)</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>new Number()</code> creates a Number object, while <code>Number()</code> coerces to a primitive. Objects are rarely the right choice here—use primitives.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="section-8">
+      <h2>8. Scope & Global Issues</h2>
+
+      <div class="quirk">
+        <strong>Missing var/const/let creates globals</strong>
+        <pre><code>function accident() {
+  x = 10;  // No var/const/let! Creates global x
+}
+
+accident();
+console.log(window.x);  // 10 (oops!)
+console.log(x);         // 10</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> Without a declaration, assignment creates a property on the global object. This is almost never intentional. Use strict mode: <code>"use strict";</code> to throw an error instead.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Arguments object in regular functions (not arrow functions)</strong>
+        <pre><code>function sum() {
+  console.log(arguments);  // Array-like object with all args
+  // arguments is NOT an array, but it has length
+}
+
+sum(1, 2, 3);  // arguments = {0: 1, 1: 2, 2: 3, length: 3}
+
+// Use rest parameters instead
+function sum2(...args) {
+  args.reduce((a, b) => a + b);  // args is a real array
+}</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> The <code>arguments</code> object exists for historical reasons. Modern code uses rest parameters instead. Arrow functions don't have <code>arguments</code>.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Closure variables outlive their function</strong>
+        <pre><code>function makeCounter() {
+  let count = 0;
+  return function() {
+    return ++count;
+  };
+}
+
+const counter = makeCounter();
+counter();  // 1
+counter();  // 2
+counter();  // 3
+// count persists even though makeCounter returned!</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> The inner function has a closure over <code>count</code>. As long as the function exists, the variable persists. This is powerful but can leak memory if you're not careful.
+        </div>
+      </div>
+
+      <div class="quirk">
+        <strong>Function scope vs block scope (var vs let)</strong>
+        <pre><code>function test() {
+  for (var i = 0; i < 3; i++) {}
+  console.log(i);  // 3 (var is function-scoped!)
+}
+
+function test2() {
+  for (let j = 0; j < 3; j++) {}
+  console.log(j);  // ReferenceError (let is block-scoped)
+}</code></pre>
+        <div class="explanation">
+          <strong>Why:</strong> <code>var</code> is function-scoped, not block-scoped. This causes variables to "leak" out of loops and conditions. Always use <code>const</code>/<code>let</code> instead.
+        </div>
+      </div>
+    </section>
+
+    <div class="callout">
+      <strong class="ok">The Pattern:</strong> Most JavaScript quirks exist because the language was designed in 10 days in 1995.
+      Many features were added without breaking the existing behavior, so weird edge cases accumulated.
+      Modern JavaScript (ES2015+) fixed many issues, but the old quirks remain for backward compatibility.
+      <strong>Always use strict mode</strong> and modern syntax (const/let, arrow functions, classes) to avoid them.
+    </div>
+
+    <p class="footer">A reference guide for JavaScript's most confusing behaviors.</p>
+  </div>
+</body>
+</html>

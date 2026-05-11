@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Agora is an interactive JavaScript learning platform focused on **core ECMAScript 2025 (ES2025) language fundamentals**. It delivers interview-style coding and theory challenges with a live code editor, adaptive difficulty based on user performance, and comprehensive tracking of strengths and weaknesses.
+Agora is an interactive JavaScript learning platform focused on **core ECMAScript 2025 (ES2025) language fundamentals** and what ever else I want to learn. It delivers interview-style coding and theory challenges with a live code editor, adaptive difficulty based on user performance, and comprehensive tracking of strengths and weaknesses.
 
 ## Architecture
 
