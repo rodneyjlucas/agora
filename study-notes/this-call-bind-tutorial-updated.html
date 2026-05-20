@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript this, call(), and bind() Tutorial</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+      --code-border: #1e3a8a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+                  radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 40px 20px 72px; }
+
+    header, section {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.92);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    header { padding: 32px; margin-bottom: 28px; }
+    section { padding: 28px; margin: 22px 0; }
+
+    h1, h2, h3, h4 { color: #f8fafc; line-height: 1.25; margin-top: 0; }
+    h1 { font-size: clamp(2rem, 4vw, 3.25rem); margin-bottom: 10px; letter-spacing: -0.04em; }
+    h2 { font-size: 1.85rem; margin-top: 0; }
+    h3 { font-size: 1.25rem; margin-top: 30px; color: #dbeafe; }
+    h4 { color: var(--accent); margin-bottom: 8px; }
+    p, li { color: var(--text); }
+
+    .subtitle { color: var(--muted); font-size: 1.05rem; max-width: 900px; margin: 0; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.75); color: #dbeafe; padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; }
+
+    .toc { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; padding: 0; list-style: none; }
+    .toc li { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.65); border-radius: 14px; }
+    .toc a { display: block; padding: 12px 14px; color: var(--accent); text-decoration: none; }
+    .toc a:hover { color: #fff; background: rgba(125, 211, 252, 0.08); border-radius: 14px; }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(125, 211, 252, 0.12); color: #dbeafe; padding: 0.15rem 0.35rem; border-radius: 6px; font-size: 0.95em; }
+
+    .code-card { position: relative; margin: 16px 0 12px; }
+    pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 16px; }
+    pre code { background: transparent; padding: 0; color: #e0f2fe; font-size: 0.92rem; }
+    .copy-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 1px solid rgba(125, 211, 252, 0.45);
+      background: rgba(15, 23, 42, 0.92);
+      color: #dbeafe;
+      padding: 6px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .copy-button:hover { background: rgba(14, 116, 144, 0.35); }
+    .copy-button.copied { border-color: var(--good); color: var(--good); }
+
+    .comment { color: #94a3b8; } .keyword { color: #93c5fd; } .string { color: #86efac; } .number { color: #fcd34d; } .fn { color: #c4b5fd; }
+
+    table { width: 100%; border-collapse: collapse; margin: 18px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #1e293b; color: #eff6ff; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+
+    .callout { border: 1px solid var(--border); border-left: 5px solid var(--accent); background: rgba(30, 41, 59, 0.82); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+    .callout.warn { border-left-color: var(--warn); }
+    .callout.bad { border-left-color: var(--bad); }
+    .callout.good { border-left-color: var(--good); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 18px; background: rgba(15, 23, 42, 0.72); padding: 18px; }
+    .explain { color: var(--muted); margin-top: 8px; }
+
+    .diagram { margin: 22px 0; padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); overflow-x: auto; }
+    .flow { display: flex; align-items: stretch; gap: 12px; min-width: 780px; }
+    .node { min-width: 150px; padding: 14px 12px; border: 1px solid #475569; border-radius: 16px; text-align: center; background: #0f172a; box-shadow: 0 8px 18px rgba(0,0,0,0.25); display: flex; flex-direction: column; justify-content: center; }
+    .node.accent { border-color: var(--accent); background: rgba(14, 116, 144, 0.2); }
+    .node.good { border-color: var(--good); background: rgba(22, 101, 52, 0.2); }
+    .node.bad { border-color: var(--bad); background: rgba(127, 29, 29, 0.18); }
+    .arrow { color: var(--accent); font-size: 1.4rem; white-space: nowrap; align-self: center; }
+
+    .output { background: #07130c; border: 1px solid rgba(134, 239, 172, 0.35); border-left: 5px solid var(--good); border-radius: 14px; padding: 14px 16px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #bbf7d0; white-space: pre-wrap; }
+    .footer { text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.95rem; }
+
+    @media (max-width: 760px) {
+      header, section { padding: 20px; }
+      .container { padding: 22px 14px 44px; }
+      .copy-button { position: static; margin-bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>JavaScript <code>this</code>, <code>call()</code>, and <code>bind()</code></h1>
+      <p class="subtitle">A practical tutorial for understanding how JavaScript decides <code>this</code>, how <code>call()</code> invokes a function with an explicit receiver, and how <code>bind()</code> permanently creates a new function with a selected receiver and optional preset arguments.</p>
+      <div class="pill-row">
+        <span class="pill">ECMAScript-aligned mental model</span>
+        <span class="pill">Call-site rules</span>
+        <span class="pill">call vs bind</span>
+        <span class="pill">Arrow function traps</span>
+        <span class="pill">Copyable code examples</span>
+      </div>
+      <ul class="toc">
+        <li><a href="#summary">1. Summary</a></li>
+        <li><a href="#mental-model">2. Mental Model</a></li>
+        <li><a href="#this-rules">3. How <code>this</code> Is Chosen</a></li>
+        <li><a href="#call">4. <code>call()</code></a></li>
+        <li><a href="#bind">5. <code>bind()</code></a></li>
+        <li><a href="#call-vs-bind">6. <code>call</code> vs <code>bind</code></a></li>
+        <li><a href="#gotchas">7. Gotchas</a></li>
+        <li><a href="#best-practices">8. Best Practices</a></li>
+        <li><a href="#quiz">9. Practice</a></li>
+      </ul>
+    </header>
+
+    <section id="summary">
+      <h2>1. Summary</h2>
+      <p><code>this</code> is not the function's owner. It is usually chosen by how the function is called. That tiny detail has consumed entire afternoons from developers who could have been outside pretending nature is still fine.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3><code>this</code></h3>
+          <p>The value available inside a function body. For normal functions, it is usually determined by the call site.</p>
+        </div>
+        <div class="card">
+          <h3><code>call()</code></h3>
+          <p>Immediately invokes a function while explicitly supplying the <code>this</code> value and arguments.</p>
+        </div>
+        <div class="card">
+          <h3><code>bind()</code></h3>
+          <p>Does not invoke immediately. It returns a new bound function with <code>this</code> and optional leading arguments locked in.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>What it does</th><th>Runs now?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>fn.call(thisArg, a, b)</code></td><td>Calls <code>fn</code> with <code>thisArg</code> as <code>this</code>.</td><td>Yes</td></tr>
+          <tr><td><code>fn.apply(thisArg, [a, b])</code></td><td>Same idea as <code>call</code>, but arguments are supplied as an array-like list.</td><td>Yes</td></tr>
+          <tr><td><code>fn.bind(thisArg, a)</code></td><td>Creates a new function with <code>thisArg</code> and optional leading arguments pre-attached.</td><td>No</td></tr>
+          <tr><td>Arrow function</td><td>Does not define its own <code>this</code>. It captures <code>this</code> lexically from the surrounding scope.</td><td>Depends on call</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="mental-model">
+      <h2>2. Mental Model</h2>
+      <p>For regular functions, do not ask: “Where was this function written?” Ask: “How was this function called?” JavaScript, naturally, chose the question that is easiest to forget.</p>
+
+      <div class="diagram">
+        <h3>Visual: call site decides <code>this</code></h3>
+        <div class="flow">
+          <div class="node">Function exists<br><code>function sayName()</code></div>
+          <div class="arrow">called as</div>
+          <div class="node accent"><code>user.sayName()</code></div>
+          <div class="arrow">therefore</div>
+          <div class="node good"><code>this === user</code></div>
+        </div>
+      </div>
+
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">sayName</span>() {
+  console.log(<span class="keyword">this</span>.name);
+}
+
+<span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  sayName
+};
+
+user.sayName(); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+
+      <p class="explain">The function was defined outside the object, but called through <code>user.sayName()</code>. The object before the dot becomes <code>this</code>.</p>
+    </section>
+
+    <section id="this-rules">
+      <h2>3. How <code>this</code> Is Chosen</h2>
+      <p>Use this priority list for normal function calls. It handles most real-world code without needing a ceremonial sacrifice to the debugger.</p>
+
+      <table>
+        <thead><tr><th>Priority</th><th>Call form</th><th>Resulting <code>this</code></th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>new Fn()</code></td><td>A newly created object.</td><td><code>new User("Ada")</code></td></tr>
+          <tr><td>2</td><td><code>fn.call(x)</code>, <code>fn.apply(x)</code>, <code>fn.bind(x)</code></td><td>The explicit value supplied as <code>x</code>.</td><td><code>say.call(user)</code></td></tr>
+          <tr><td>3</td><td><code>obj.fn()</code></td><td>The object before the dot.</td><td><code>user.say()</code></td></tr>
+          <tr><td>4</td><td><code>fn()</code></td><td><code>undefined</code> in strict mode; otherwise often the global object.</td><td><code>say()</code></td></tr>
+          <tr><td>Special</td><td>Arrow function</td><td>Lexical <code>this</code> from surrounding scope. Not changed by <code>call</code> or <code>bind</code>.</td><td><code>() =&gt; this.name</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Detached method problem</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="string">"use strict"</span>;
+
+<span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  sayName() {
+    console.log(<span class="keyword">this</span>.name);
+  }
+};
+
+<span class="keyword">const</span> detached = user.sayName;
+detached(); <span class="comment">// TypeError: Cannot read properties of undefined</span></code></pre>
+      </div>
+      <p class="explain">The call changed from <code>user.sayName()</code> to <code>detached()</code>. There is no object before the dot anymore, so strict mode gives the function <code>this === undefined</code>.</p>
+    </section>
+
+    <section id="call">
+      <h2>4. <code>call()</code></h2>
+      <p><code>call()</code> invokes a function immediately. The first argument becomes <code>this</code>; the remaining arguments are passed to the function normally.</p>
+
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">introduce</span>(greeting, punctuation) {
+  <span class="keyword">return</span> <span class="string">`${greeting}, I am ${this.name}${punctuation}`</span>;
+}
+
+<span class="keyword">const</span> ada = { name: <span class="string">"Ada"</span> };
+<span class="keyword">const</span> grace = { name: <span class="string">"Grace"</span> };
+
+console.log(introduce.call(ada, <span class="string">"Hello"</span>, <span class="string">"."</span>));
+console.log(introduce.call(grace, <span class="string">"Hi"</span>, <span class="string">"!"</span>));</code></pre>
+      </div>
+
+      <div class="output">Hello, I am Ada.
+Hi, I am Grace!</div>
+
+      <div class="diagram">
+        <h3>Visual: <code>call()</code></h3>
+        <div class="flow">
+          <div class="node"><code>introduce</code></div>
+          <div class="arrow">.call(</div>
+          <div class="node accent"><code>ada</code><br>selected <code>this</code></div>
+          <div class="arrow">+</div>
+          <div class="node">arguments<br><code>"Hello", "."</code></div>
+          <div class="arrow">=</div>
+          <div class="node good">runs immediately</div>
+        </div>
+      </div>
+
+      <h3>Borrowing methods with <code>call()</code></h3>
+      <p>A common pattern is to borrow a method from one object and run it with another object as <code>this</code>.</p>
+
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> reporter = {
+  report() {
+    <span class="keyword">return</span> <span class="string">`${this.name}: ${this.status}`</span>;
+  }
+};
+
+<span class="keyword">const</span> task = {
+  name: <span class="string">"Deploy"</span>,
+  status: <span class="string">"ready"</span>
+};
+
+console.log(reporter.report.call(task)); <span class="comment">// "Deploy: ready"</span></code></pre>
+      </div>
+    </section>
+
+    <section id="bind">
+      <h2>5. <code>bind()</code></h2>
+      <p><code>bind()</code> returns a new function. It does not run the original function immediately. The new function remembers the chosen <code>this</code> value.</p>
+
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">sayName</span>() {
+  console.log(<span class="keyword">this</span>.name);
+}
+
+<span class="keyword">const</span> user = { name: <span class="string">"Ada"</span> };
+
+<span class="keyword">const</span> boundSayName = sayName.bind(user);
+
+boundSayName(); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+
+      <p class="explain">This is useful when a function will be called later by someone else, such as an event system, a timer, or a callback API.</p>
+
+      <h3>Preset arguments with <code>bind()</code></h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">multiply</span>(a, b) {
+  <span class="keyword">return</span> a * b;
+}
+
+<span class="keyword">const</span> double = multiply.bind(<span class="keyword">null</span>, <span class="number">2</span>);
+
+console.log(double(<span class="number">5</span>));  <span class="comment">// 10</span>
+console.log(double(<span class="number">12</span>)); <span class="comment">// 24</span></code></pre>
+      </div>
+
+      <p class="explain">Here <code>this</code> is irrelevant, so <code>null</code> is supplied. The first argument, <code>2</code>, is preset. Later calls supply the remaining argument.</p>
+
+      <h3>Binding methods for callbacks</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> button = {
+  label: <span class="string">"Save"</span>,
+  click() {
+    console.log(<span class="string">`Clicked ${this.label}`</span>);
+  }
+};
+
+<span class="keyword">const</span> handler = button.click.bind(button);
+
+setTimeout(handler, <span class="number">1000</span>); <span class="comment">// later: "Clicked Save"</span></code></pre>
+      </div>
+    </section>
+
+    <section id="call-vs-bind">
+      <h2>6. <code>call</code> vs <code>bind</code></h2>
+      <p>The difference is timing. <code>call()</code> is “run this now with this value.” <code>bind()</code> is “make me a reusable function that will run later with this value.” Ridiculously small wording, radically different behavior. Naturally.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3><code>call()</code>: immediate invocation</h3>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">function</span> <span class="fn">show</span>() {
+  console.log(<span class="keyword">this</span>.name);
+}
+
+show.call({ name: <span class="string">"Ada"</span> });
+<span class="comment">// runs now</span></code></pre>
+          </div>
+        </div>
+        <div class="card">
+          <h3><code>bind()</code>: delayed invocation</h3>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code><span class="keyword">function</span> <span class="fn">show</span>() {
+  console.log(<span class="keyword">this</span>.name);
+}
+
+<span class="keyword">const</span> showAda = show.bind({ name: <span class="string">"Ada"</span> });
+showAda();
+<span class="comment">// runs later</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gotchas">
+      <h2>7. Gotchas and Non-Intuitive Details</h2>
+
+      <h3>7.1 Arrow functions ignore <code>call()</code> and <code>bind()</code> for <code>this</code></h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> user = { name: <span class="string">"Ada"</span> };
+
+<span class="keyword">const</span> arrow = () =&gt; <span class="keyword">this</span>.name;
+
+console.log(arrow.call(user));
+<span class="comment">// Does not force this to user.</span></code></pre>
+      </div>
+      <p class="explain">Arrow functions do not have their own <code>this</code>. Their <code>this</code> is taken from the surrounding lexical scope. <code>call()</code> and <code>bind()</code> can still pass arguments, but they cannot replace arrow <code>this</code>.</p>
+
+      <h3>7.2 Binding a function twice does not replace the first binding</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">showName</span>() {
+  console.log(<span class="keyword">this</span>.name);
+}
+
+<span class="keyword">const</span> ada = { name: <span class="string">"Ada"</span> };
+<span class="keyword">const</span> grace = { name: <span class="string">"Grace"</span> };
+
+<span class="keyword">const</span> boundOnce = showName.bind(ada);
+<span class="keyword">const</span> boundTwice = boundOnce.bind(grace);
+
+boundTwice(); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+      <p class="explain">Once a function is bound, rebinding the bound function does not change its original bound <code>this</code>. The first binding wins. JavaScript does occasionally commit to something.</p>
+
+      <h3>7.3 <code>bind()</code> changes function identity</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">handleClick</span>() {}
+
+<span class="keyword">const</span> boundA = handleClick.bind(<span class="keyword">null</span>);
+<span class="keyword">const</span> boundB = handleClick.bind(<span class="keyword">null</span>);
+
+console.log(boundA === boundB); <span class="comment">// false</span></code></pre>
+      </div>
+      <p class="explain">Every call to <code>bind()</code> creates a new function. This matters when adding and removing event listeners.</p>
+
+      <h3>7.4 Do not bind inline when you need to remove the listener later</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="comment">// Problem: these are two different function objects.</span>
+button.addEventListener(<span class="string">"click"</span>, obj.handle.bind(obj));
+button.removeEventListener(<span class="string">"click"</span>, obj.handle.bind(obj));
+
+<span class="comment">// Better: save the bound function.</span>
+<span class="keyword">const</span> boundHandle = obj.handle.bind(obj);
+button.addEventListener(<span class="string">"click"</span>, boundHandle);
+button.removeEventListener(<span class="string">"click"</span>, boundHandle);</code></pre>
+      </div>
+
+      <h3>7.5 Constructor calls have special rules</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">User</span>(name) {
+  <span class="keyword">this</span>.name = name;
+}
+
+<span class="keyword">const</span> BoundUser = User.bind({ name: <span class="string">"Ignored"</span> });
+<span class="keyword">const</span> user = <span class="keyword">new</span> BoundUser(<span class="string">"Ada"</span>);
+
+console.log(user.name); <span class="comment">// "Ada"</span></code></pre>
+      </div>
+      <p class="explain">When a bound function is used with <code>new</code>, the newly created object becomes <code>this</code>. The bound <code>thisArg</code> is ignored for construction, though preset arguments still apply.</p>
+    </section>
+
+    <section id="best-practices">
+      <h2>8. Best Practices</h2>
+
+      <div class="callout good"><strong>Use method syntax</strong> when the function depends on the object before the dot: <code>user.sayName()</code>.</div>
+      <div class="callout good"><strong>Use <code>call()</code></strong> when you want to invoke a function once with a specific <code>this</code> value.</div>
+      <div class="callout good"><strong>Use <code>bind()</code></strong> when the function will run later and must keep a specific <code>this</code> value.</div>
+      <div class="callout warn"><strong>Do not use arrow functions as object methods</strong> when you need <code>this</code> to be the object before the dot.</div>
+      <div class="callout warn"><strong>Avoid repeated inline <code>bind()</code></strong> in render loops or event listener setup. Store the bound function once.</div>
+
+      <h3>Decision guide</h3>
+      <div class="diagram">
+        <div class="flow">
+          <div class="node">Need dynamic receiver?<br><code>obj.fn()</code></div>
+          <div class="arrow">yes</div>
+          <div class="node good">Use method syntax or regular function</div>
+          <div class="arrow">run once?</div>
+          <div class="node accent">Use <code>call()</code></div>
+          <div class="arrow">run later?</div>
+          <div class="node accent">Use <code>bind()</code></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quiz">
+      <h2>9. Practice: Predict the Output</h2>
+
+      <h3>Question 1</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="string">"use strict"</span>;
+
+<span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  sayName() {
+    console.log(<span class="keyword">this</span>.name);
+  }
+};
+
+<span class="keyword">const</span> fn = user.sayName;
+fn.call({ name: <span class="string">"Grace"</span> });</code></pre>
+      </div>
+      <div class="callout"><strong>Answer:</strong> <code>Grace</code>. <code>call()</code> supplies the explicit <code>this</code>.</div>
+
+      <h3>Question 2</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">const</span> user = {
+  name: <span class="string">"Ada"</span>,
+  regular() {
+    <span class="keyword">return</span> <span class="keyword">this</span>.name;
+  },
+  arrow: () =&gt; <span class="keyword">this</span>.name
+};
+
+console.log(user.regular());
+console.log(user.arrow());</code></pre>
+      </div>
+      <div class="callout"><strong>Answer:</strong> <code>user.regular()</code> returns <code>Ada</code>. <code>user.arrow()</code> does not get <code>this</code> from <code>user</code>, so the result depends on the outer scope and is often <code>undefined</code> in module/strict contexts.</div>
+
+      <h3>Question 3</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="keyword">function</span> <span class="fn">greet</span>(word, mark) {
+  <span class="keyword">return</span> <span class="string">`${word} ${this.name}${mark}`</span>;
+}
+
+<span class="keyword">const</span> greetAda = greet.bind({ name: <span class="string">"Ada"</span> }, <span class="string">"Hello"</span>);
+
+console.log(greetAda(<span class="string">"!"</span>));</code></pre>
+      </div>
+      <div class="callout"><strong>Answer:</strong> <code>Hello Ada!</code>. <code>bind()</code> fixed <code>this</code> and preset the first argument.</div>
+    </section>
+
+    <section id="conclusion">
+      <h2>Conclusion</h2>
+      <p>The practical rule is simple: regular functions get <code>this</code> mostly from how they are called. <code>call()</code> invokes immediately with an explicit <code>this</code>. <code>bind()</code> creates a reusable function with <code>this</code> attached. Arrow functions opt out of this whole mess by capturing <code>this</code> lexically, which is either elegant or another way to ruin your afternoon, depending on where you put them.</p>
+      <div class="callout good"><strong>Final rule:</strong> Use <code>call()</code> for immediate borrowing or invocation. Use <code>bind()</code> for delayed callbacks. Use method syntax when <code>this</code> should mean “the object before the dot.”</div>
+    </section>
+
+    <p class="footer">Standalone HTML tutorial generated for JavaScript <code>this</code>, <code>call()</code>, and <code>bind()</code>.</p>
+  </div>
+
+  <script>
+    function copyCode(button) {
+      const card = button.closest('.code-card');
+      const code = card.querySelector('pre code').innerText;
+
+      navigator.clipboard.writeText(code).then(() => {
+        const original = button.innerText;
+        button.innerText = 'Copied';
+        button.classList.add('copied');
+
+        setTimeout(() => {
+          button.innerText = original;
+          button.classList.remove('copied');
+        }, 1400);
+      }).catch(() => {
+        button.innerText = 'Copy failed';
+      });
+    }
+  </script>
+
+<section id="this-core-concept" style="margin-top:40px;">
+  <h2>Core Concept: Understanding JavaScript <code>this</code></h2>
+
+  <p>
+    The most important concept behind <code>call</code>, <code>apply</code>, and
+    <code>bind</code> is understanding how JavaScript determines the value of
+    <code>this</code>.
+  </p>
+
+  <div class="callout good">
+    <strong>Critical Rule:</strong>
+    Regular functions receive <code>this</code> from HOW they are called.
+    Arrow functions capture <code>this</code> lexically from where they were created.
+  </div>
+
+  <pre><code>const user = {
+  name: "Ada",
+
+  regular() {
+    console.log(this.name);
+  },
+
+  arrow: () => {
+    console.log(this.name);
+  }
+};
+
+user.regular(); // "Ada"
+user.arrow();   // usually undefined</code></pre>
+
+  <p>
+    Humans keep expecting arrow functions to behave like object methods because
+    apparently suffering was not enough and JavaScript needed to help. Arrow
+    functions do not create their own <code>this</code>.
+  </p>
+
+  <h3>Visual Model</h3>
+
+  <pre><code>regular function:
+call-site ---> determines this
+
+arrow function:
+creation scope ---> captures this</code></pre>
+
+  <h3>Why call/apply/bind Matter</h3>
+
+  <pre><code>function greet(message) {
+  console.log(message, this.name);
+}
+
+const user = { name: "Grace" };
+
+greet.call(user, "Hello"); // Hello Grace</code></pre>
+
+  <p>
+    <code>call</code>, <code>apply</code>, and <code>bind</code> exist primarily
+    to control the value of <code>this</code> for regular functions.
+  </p>
+
+  <div class="callout warn">
+    <strong>Important:</strong>
+    Arrow functions ignore rebinding attempts from
+    <code>call</code>, <code>apply</code>, and <code>bind</code>.
+  </div>
+
+  <pre><code>const arrow = () => console.log(this.name);
+
+const user = { name: "Linus" };
+
+arrow.call(user); // does NOT rebind this</code></pre>
+</section>
+
+</body>
+</html>

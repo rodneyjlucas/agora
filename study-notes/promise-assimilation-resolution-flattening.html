@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Promise Assimilation, Resolution Procedure, and Flattening</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #172033;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #86efac;
+      --warn: #facc15;
+      --bad: #fca5a5;
+      --border: #334155;
+      --code-bg: #050816;
+      --code-border: #1e3a8a;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(125, 211, 252, 0.14), transparent 32rem),
+                  radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 30rem),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .container { max-width: 1120px; margin: 0 auto; padding: 40px 20px 72px; }
+    header, section {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    }
+    header { padding: 32px; margin-bottom: 28px; }
+    section { padding: 28px; margin: 22px 0; }
+    h1, h2, h3, h4 { color: #f8fafc; line-height: 1.25; margin-top: 0; }
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 10px; letter-spacing: -0.04em; }
+    h2 { font-size: 1.85rem; }
+    h3 { font-size: 1.25rem; margin-top: 30px; color: #dbeafe; }
+    h4 { color: var(--accent); margin-bottom: 8px; }
+    p, li { color: var(--text); }
+    strong { color: #f8fafc; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; max-width: 900px; margin: 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .pill { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.75); color: #dbeafe; padding: 6px 10px; border-radius: 999px; font-size: 0.9rem; }
+    .toc { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; padding: 0; list-style: none; }
+    .toc li { border: 1px solid var(--border); background: rgba(15, 23, 42, 0.65); border-radius: 14px; }
+    .toc a { display: block; padding: 12px 14px; color: var(--accent); text-decoration: none; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(125, 211, 252, 0.12); color: #dbeafe; padding: 0.15rem 0.35rem; border-radius: 6px; font-size: 0.95em; }
+    pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 16px; }
+    pre code { background: transparent; padding: 0; color: #e0f2fe; font-size: 0.92rem; white-space: pre; }
+    .comment { color: #94a3b8; } .keyword { color: #93c5fd; } .string { color: #86efac; } .number { color: #fcd34d; } .fn { color: #c4b5fd; }
+    .code-card { position: relative; margin: 16px 0 10px; }
+    .copy-button {
+      position: absolute; top: 10px; right: 10px; z-index: 2;
+      border: 1px solid rgba(125, 211, 252, 0.45); border-radius: 999px;
+      background: rgba(15, 23, 42, 0.92); color: #dbeafe;
+      padding: 6px 10px; cursor: pointer; font-weight: 700; font-size: 0.82rem;
+    }
+    .copy-button:hover { border-color: var(--accent); color: #ffffff; }
+    .copy-button.copied { border-color: var(--good); color: var(--good); }
+    table { width: 100%; border-collapse: collapse; margin: 18px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #1e293b; color: #eff6ff; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    .callout { border: 1px solid var(--border); border-left: 5px solid var(--accent); background: rgba(30, 41, 59, 0.8); border-radius: 14px; padding: 14px 16px; margin: 18px 0; }
+    .callout.warn { border-left-color: var(--warn); } .callout.bad { border-left-color: var(--bad); } .callout.good { border-left-color: var(--good); }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .card { border: 1px solid var(--border); border-radius: 18px; background: rgba(15, 23, 42, 0.72); padding: 18px; }
+    .explain { color: var(--muted); margin-top: 8px; }
+    .diagram { margin: 22px 0; padding: 20px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); overflow-x: auto; }
+    .flow { display: flex; align-items: center; gap: 12px; min-width: 780px; }
+    .node { min-width: 150px; padding: 14px 12px; border: 1px solid #475569; border-radius: 16px; text-align: center; background: #0f172a; box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+    .node.accent { border-color: var(--accent); background: rgba(14, 116, 144, 0.2); }
+    .node.good { border-color: var(--good); background: rgba(22, 101, 52, 0.2); }
+    .node.warn { border-color: var(--warn); background: rgba(133, 77, 14, 0.18); }
+    .node.bad { border-color: var(--bad); background: rgba(127, 29, 29, 0.18); }
+    .arrow { color: var(--accent); font-size: 1.4rem; white-space: nowrap; }
+    .output { border-left-color: var(--good); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #bbf7d0; }
+    .footer { text-align: center; color: var(--muted); margin-top: 32px; font-size: 0.95rem; }
+    @media (max-width: 760px) {
+      header, section { padding: 20px; }
+      .container { padding: 22px 14px 44px; }
+      .copy-button { position: static; margin-bottom: 8px; }
+      .flow { min-width: 680px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Promise Assimilation, Resolution Procedure, and Flattening</h1>
+      <p class="subtitle">A practical JavaScript tutorial for understanding how promises adopt other promises and thenables, why nested promises usually do not stay nested, and how <code>.then()</code> chains decide what the next promise becomes.</p>
+      <div class="pill-row">
+        <span class="pill">Promises</span>
+        <span class="pill">Thenables</span>
+        <span class="pill">Resolution procedure</span>
+        <span class="pill">Flattening</span>
+        <span class="pill">Microtasks</span>
+      </div>
+      <ul class="toc">
+        <li><a href="#initial-idea">1. Initial Idea / Summary</a></li>
+        <li><a href="#mental-model">2. Mental Model</a></li>
+        <li><a href="#examples">3. Detailed Examples</a></li>
+        <li><a href="#gotchas">4. Gotchas and Tricky Concepts</a></li>
+        <li><a href="#best-practices">5. Best Practices</a></li>
+        <li><a href="#summary">6. Summary</a></li>
+      </ul>
+    </header>
+
+    <section id="initial-idea">
+      <h2>1. Initial Idea / Summary</h2>
+      <p>When a promise is resolved with a normal value, it fulfills with that value. When it is resolved with another promise or a thenable object, JavaScript does not simply wrap that object and move on. It inspects it, follows it, and adopts its final state. This adoption behavior is called <strong>promise assimilation</strong>.</p>
+      <div class="callout good"><strong>Core rule:</strong> A promise resolved with another promise or thenable tries to become whatever that inner async value eventually becomes.</div>
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th><th>Typical example</th></tr></thead>
+        <tbody>
+          <tr><td>Resolution procedure</td><td>The internal algorithm that decides how a returned or resolved value affects a promise.</td><td><code>resolve(x)</code> or <code>return x</code> inside <code>.then()</code></td></tr>
+          <tr><td>Assimilation</td><td>Adopting the state of a promise-like value, especially another promise or thenable.</td><td><code>Promise.resolve(fetch(...))</code></td></tr>
+          <tr><td>Flattening</td><td>The observable result: promise chains behave like one level, not deeply nested boxes.</td><td><code>Promise.resolve(Promise.resolve(42))</code> fulfills with <code>42</code></td></tr>
+        </tbody>
+      </table>
+      <div class="diagram">
+        <h3>Visual: Promise Adoption</h3>
+        <div class="flow">
+          <div class="node">Outer promise</div><div class="arrow">resolved with</div><div class="node accent">Inner promise / thenable</div><div class="arrow">adopts</div><div class="node good">Inner final value or reason</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="mental-model">
+      <h2>2. Mental Model</h2>
+      <p>Think of a promise as a sealed container whose contents are not decided immediately. Resolving the container does not always mean fulfilling it. It means: “start the process of deciding this promise’s final fate.” Naturally JavaScript needed this to be subtle, because apparently one kind of async box was not enough for civilization.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Normal value</h3>
+          <p>If the resolved value is not promise-like, the promise fulfills with that value.</p>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code>Promise.resolve(10)
+  .then(value =&gt; console.log(value));
+
+// 10</code></pre>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Promise or thenable</h3>
+          <p>If the resolved value has a callable <code>then</code>, JavaScript follows it and adopts what it settles to.</p>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code>Promise.resolve(Promise.resolve(10))
+  .then(value =&gt; console.log(value));
+
+// 10</code></pre>
+          </div>
+        </div>
+      </div>
+      <h3>The three-question model</h3>
+      <table>
+        <thead><tr><th>Question</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td>Is the value the same promise?</td><td>Reject with a <code>TypeError</code>. A promise cannot resolve to itself.</td></tr>
+          <tr><td>Is the value an object or function with callable <code>then</code>?</td><td>Call that <code>then</code> and adopt the result. This is thenable assimilation.</td></tr>
+          <tr><td>Otherwise?</td><td>Fulfill with the value directly.</td></tr>
+        </tbody>
+      </table>
+      <div class="diagram">
+        <h3>Visual: Resolution Decision</h3>
+        <div class="flow">
+          <div class="node">Resolve with x</div><div class="arrow">same promise?</div><div class="node bad">reject TypeError</div><div class="arrow">thenable?</div><div class="node accent">assimilate</div><div class="arrow">plain value?</div><div class="node good">fulfill</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples">
+      <h2>3. Detailed Examples</h2>
+
+      <h3>3.1 Simple value: no assimilation needed</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>Promise.resolve("Ada")
+  .then(name =&gt; {
+    console.log(name);
+    return name.length;
+  })
+  .then(length =&gt; {
+    console.log(length);
+  });</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>Ada<br>3</div>
+      <p class="explain">The first promise fulfills with the string <code>"Ada"</code>. The first <code>.then()</code> returns the plain number <code>3</code>, so the next promise fulfills with <code>3</code>. No promise-like object appears, so no adoption is needed.</p>
+
+      <h3>3.2 Returning a promise from <code>.then()</code></h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>Promise.resolve("start")
+  .then(value =&gt; {
+    console.log(value);
+    return Promise.resolve("inner value");
+  })
+  .then(value =&gt; {
+    console.log(value);
+  });</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>start<br>inner value</div>
+      <p class="explain">The first <code>.then()</code> does not pass the inner promise object as the next value. It returns a promise, so the promise created by <code>.then()</code> adopts that returned promise’s state. The next handler receives <code>"inner value"</code>, not <code>Promise { "inner value" }</code>.</p>
+
+      <h3>3.3 Promise flattening: nested promises do not behave like nested arrays</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>const nested = Promise.resolve(
+  Promise.resolve(
+    Promise.resolve(42)
+  )
+);
+
+nested.then(value =&gt; {
+  console.log(value);
+});</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>42</div>
+      <p class="explain">Even though the source code looks nested, the observable result is flattened. JavaScript keeps adopting promise states until it reaches a non-promise fulfillment value or a rejection reason.</p>
+
+      <h3>3.4 Thenable assimilation: promise-like objects count too</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>const thenable = {
+  then(resolve) {
+    resolve("value from a thenable");
+  }
+};
+
+Promise.resolve(thenable)
+  .then(value =&gt; console.log(value));</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>value from a thenable</div>
+      <p class="explain">The object is not created by <code>new Promise()</code>, but it has a callable <code>then</code> method. JavaScript treats it as thenable and assimilates it. This lets promises interoperate with promise-like libraries, which is useful and also a fine source of haunted edge cases.</p>
+
+      <h3>3.5 Complex example: return, throw, catch, and assimilation</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>Promise.resolve("A")
+  .then(value =&gt; {
+    console.log(value);
+    return Promise.resolve("B");
+  })
+  .then(value =&gt; {
+    console.log(value);
+    throw new Error("C failed");
+  })
+  .catch(error =&gt; {
+    console.log(error.message);
+    return Promise.resolve("D recovered");
+  })
+  .then(value =&gt; {
+    console.log(value);
+  });</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>A<br>B<br>C failed<br>D recovered</div>
+      <p class="explain">The first handler returns a fulfilled promise, so the chain waits for and adopts <code>"B"</code>. The second handler throws, so the promise returned by that <code>.then()</code> rejects. The <code>.catch()</code> handles the rejection and returns another fulfilled promise. That returned promise is assimilated, so the final <code>.then()</code> receives <code>"D recovered"</code>.</p>
+
+      <h3>3.6 Order of execution with microtasks</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>console.log("sync 1");
+
+Promise.resolve()
+  .then(() =&gt; {
+    console.log("then 1");
+    return Promise.resolve("nested");
+  })
+  .then(value =&gt; {
+    console.log("then 2", value);
+  });
+
+console.log("sync 2");</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>sync 1<br>sync 2<br>then 1<br>then 2 nested</div>
+      <p class="explain">Synchronous code runs first. Promise reaction callbacks run later as microtasks. Returning <code>Promise.resolve("nested")</code> causes the next promise in the chain to assimilate the returned promise before running the next handler.</p>
+
+      <h3>3.7 Async functions use the same idea</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>async function getValue() {
+  return Promise.resolve("from async");
+}
+
+getValue().then(value =&gt; {
+  console.log(value);
+});</code></pre>
+      </div>
+      <div class="callout output"><strong>Output:</strong><br>from async</div>
+      <p class="explain">An <code>async</code> function always returns a promise. If you return another promise from it, the outer async function’s promise adopts the returned promise’s final state. So no, you do not get <code>Promise&lt;Promise&lt;string&gt;&gt;</code> in normal JavaScript behavior.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>4. Gotchas and Tricky Associated Concepts</h2>
+      <div class="callout warn"><strong>Gotcha 1: “Resolved” does not always mean “fulfilled.”</strong><br>A promise can be resolved to another pending promise. In that case, it is locked into following the other promise but may still be pending.</div>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>let finish;
+
+const inner = new Promise(resolve =&gt; {
+  finish = resolve;
+});
+
+const outer = Promise.resolve(inner);
+
+outer.then(value =&gt; console.log(value));
+
+setTimeout(() =&gt; finish("done later"), 1000);</code></pre>
+      </div>
+      <p class="explain">The outer promise is resolved to <code>inner</code>, but it does not fulfill until <code>inner</code> fulfills.</p>
+
+      <div class="callout bad"><strong>Gotcha 2: A promise cannot resolve to itself.</strong><br>Self-resolution would create an impossible loop, so JavaScript rejects with a <code>TypeError</code>.</div>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>let resolveOuter;
+
+const p = new Promise(resolve =&gt; {
+  resolveOuter = resolve;
+});
+
+resolveOuter(p);
+
+p.catch(error =&gt; {
+  console.log(error instanceof TypeError);
+});
+
+// true</code></pre>
+      </div>
+
+      <div class="callout warn"><strong>Gotcha 3: Thenables can be dangerous if badly written.</strong><br>A thenable controls when it calls <code>resolve</code> or <code>reject</code>. JavaScript protects against multiple calls, but confusing thenables still make code harder to reason about.</div>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>const chaoticThenable = {
+  then(resolve, reject) {
+    resolve("first");
+    reject(new Error("second"));
+    resolve("third");
+  }
+};
+
+Promise.resolve(chaoticThenable)
+  .then(value =&gt; console.log(value));
+
+// first</code></pre>
+      </div>
+      <p class="explain">Only the first settlement wins. The later calls are ignored. JavaScript has guardrails, because apparently it has met developers.</p>
+
+      <div class="callout warn"><strong>Gotcha 4: Returning inside <code>.then()</code> matters.</strong><br>If you create a promise inside a handler but forget to return it, the chain does not wait for it.</div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Broken</h3>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code>Promise.resolve()
+  .then(() =&gt; {
+    Promise.resolve("work done");
+  })
+  .then(value =&gt; console.log(value));
+
+// undefined</code></pre>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Correct</h3>
+          <div class="code-card">
+            <button class="copy-button" onclick="copyCode(this)">Copy</button>
+            <pre><code>Promise.resolve()
+  .then(() =&gt; {
+    return Promise.resolve("work done");
+  })
+  .then(value =&gt; console.log(value));
+
+// work done</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warn"><strong>Gotcha 5: Flattening is not array flattening.</strong><br>Promise flattening follows async state. It does not flatten data structures inside fulfillment values.</div>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>Promise.resolve([[1], [2], [3]])
+  .then(value =&gt; console.log(value));
+
+// [[1], [2], [3]]</code></pre>
+      </div>
+    </section>
+
+    <section id="best-practices">
+      <h2>5. Best Practices</h2>
+      <div class="grid-2">
+        <div class="card"><h3>Return promises from chains</h3><p>When a <code>.then()</code> starts async work, return that promise so the chain assimilates it and waits for its result.</p></div>
+        <div class="card"><h3>Prefer <code>async</code>/<code>await</code> for long flows</h3><p>Promise mechanics still apply, but the code reads more like direct control flow. Fewer nested callbacks, fewer tiny traps wearing fake mustaches.</p></div>
+        <div class="card"><h3>Be cautious with custom thenables</h3><p>Use real promises unless you have a specific interop reason. A random object with <code>then</code> can trigger assimilation unexpectedly.</p></div>
+        <div class="card"><h3>Use <code>throw</code> or rejection deliberately</h3><p>Throwing inside a handler rejects the next promise. Returning a value from <code>catch</code> recovers the chain.</p></div>
+      </div>
+      <h3>Clean chain pattern</h3>
+      <div class="code-card">
+        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+        <pre><code>getUser(userId)
+  .then(user =&gt; getOrders(user.id))
+  .then(orders =&gt; summarizeOrders(orders))
+  .catch(error =&gt; {
+    console.error("Workflow failed:", error);
+    throw error;
+  });</code></pre>
+      </div>
+      <p class="explain">Each handler returns the next async operation. The chain remains flat and readable because promise resolution assimilates each returned promise.</p>
+    </section>
+
+    <section id="summary">
+      <h2>6. Summary</h2>
+      <div class="callout good"><strong>Final rule:</strong> Promise resolution does not merely store a value. It evaluates the value. Plain values fulfill. Promises and thenables are assimilated. The visible result is flattening.</div>
+      <table>
+        <thead><tr><th>When handler returns...</th><th>Next promise...</th></tr></thead>
+        <tbody>
+          <tr><td>Plain value</td><td>Fulfills with that value.</td></tr>
+          <tr><td>Thrown error</td><td>Rejects with that error.</td></tr>
+          <tr><td>Fulfilled promise</td><td>Adopts its fulfillment value.</td></tr>
+          <tr><td>Rejected promise</td><td>Adopts its rejection reason.</td></tr>
+          <tr><td>Thenable</td><td>Calls/assimilates its <code>then</code> method.</td></tr>
+          <tr><td>Nothing</td><td>Fulfills with <code>undefined</code>.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <p class="footer">Standalone HTML tutorial generated for JavaScript promise assimilation, resolution procedure, and flattening.</p>
+  </div>
+
+  <script>
+    function copyCode(button) {
+      const codeBlock = button.parentElement.querySelector('pre code');
+      const code = codeBlock.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const original = button.textContent;
+        button.textContent = 'Copied';
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove('copied');
+        }, 1500);
+      }).catch(() => {
+        button.textContent = 'Copy failed';
+        setTimeout(() => button.textContent = 'Copy', 1500);
+      });
+    }
+  </script>
+</body>
+</html>
