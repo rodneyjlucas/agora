@@ -9,4 +9,3 @@ build/
 out/
 .turbo/
 scratch/
-readonly-filesystem-mcp/
